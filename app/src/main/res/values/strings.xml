@@ -28,5 +28,6 @@
  <string name="tmdb_image_size_342" translatable="false">342</string>
  <string name="tmdb_image_size_500" translatable="false">500</string>
  <string name="tmdb_base_image_url" translatable="false">http://image.tmdb.org/t/p/w</string>
+ <string name="page">page</string>
 
 </resources>

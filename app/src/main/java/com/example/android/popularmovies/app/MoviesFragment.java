@@ -48,7 +48,8 @@ public class MoviesFragment extends Fragment {
 
     private ArrayList<Movie> movieArray;
     private MovieAdapter movieAdapter;
-
+    private String[] apiParams;
+    private int currentPage = 1;
 
     public MoviesFragment() {
     }
@@ -113,9 +114,12 @@ public class MoviesFragment extends Fragment {
     private void updateMovies() {
         FetchMoviesTask moviesTask = new FetchMoviesTask();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String sortOrder = prefs.getString(getString(R.string.pref_sort_order_key),
-                getString(R.string.pref_sort_order_most_popular));
-        moviesTask.execute(sortOrder);
+        apiParams = new String[] {
+                Integer.toString(currentPage),
+                prefs.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_most_popular))
+        };
+
+        moviesTask.execute(apiParams);
     }
 
     @Override
@@ -124,7 +128,8 @@ public class MoviesFragment extends Fragment {
         updateMovies();
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, Movie[]> {
+    // *** TODO  Extract this to  separate file?   onPostExecute() uses movieAdapter, though
+    public class FetchMoviesTask extends AsyncTask<String[], Void, Movie[]> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
@@ -156,7 +161,7 @@ public class MoviesFragment extends Fragment {
 
 
         @Override
-        protected Movie[] doInBackground(String... params) {
+        protected Movie[] doInBackground(String[]... params) {
 
             if (params.length == 0) {
                 return null;
@@ -169,7 +174,8 @@ public class MoviesFragment extends Fragment {
             try {
 
                 Uri builtMoviesUri = Uri.parse(getString(R.string.tmdb_base_url)).buildUpon()
-                        .appendQueryParameter(getString(R.string.tmdb_sort_by_key), params[0])
+                        .appendQueryParameter(getString(R.string.page), params[0][0])
+                        .appendQueryParameter(getString(R.string.tmdb_sort_by_key), params[0][1])
                         .appendQueryParameter(getString(R.string.tmdb_api_key_key), BuildConfig.THE_MOVIE_DB_API_KEY)
                         .build();
 
