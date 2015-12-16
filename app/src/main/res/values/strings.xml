@@ -8,9 +8,13 @@
  <string name="pref_sort_order_label">Sort Order</string>
  <string name="pref_sort_order_label_most_popular">Most Popular</string>
  <string name="pref_sort_order_label_highest_rated">Highest Rated</string>
+ <string name="pref_sort_order_label_latest_releases">Latest Releases</string>
+ <string name="pref_sort_order_label_highest_grossing">Highest Grossing</string>
  <string name="pref_sort_order_key" translatable="false">sort_order</string>
  <string name="pref_sort_order_most_popular" translatable="false">popularity.desc</string>
  <string name="pref_sort_order_highest_rated" translatable="false">vote_average.desc</string>
+ <string name="pref_sort_order_latest_releases">release_date.desc</string>
+ <string name="pref_sort_order_highest_grossing">revenue.desc</string>
  <string name="tmdb_results" translatable="false">results</string>
  <string name="tmdb_poster_path" translatable="false">poster_path</string>
  <string name="tmdb_overview" translatable="false">overview</string>

@@ -29,6 +29,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
@@ -49,7 +50,9 @@ public class MoviesFragment extends Fragment {
     private ArrayList<Movie> movieArray;
     private MovieAdapter movieAdapter;
     private String[] apiParams;
-    private int currentPage = 1;
+    private int currentPage;
+    private Boolean fetchingMore = true;
+    private GridView gridView;
 
     public MoviesFragment() {
     }
@@ -89,13 +92,10 @@ public class MoviesFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         movieAdapter =  new MovieAdapter( getActivity(), movieArray);
-
         View rootView = inflater.inflate(R.layout.movie_fragment, container, false);
 
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+        gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
         gridView.setAdapter(movieAdapter);
-
-        // gridView.setColumnWidth(Integer.parseInt(getString(R.string.tmdb_image_size_342)));
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -108,18 +108,40 @@ public class MoviesFragment extends Fragment {
             }
         });
 
+        gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                int last = firstVisibleItem + visibleItemCount;
+                if((last == totalItemCount) && !fetchingMore){
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                        new FetchMoviesTask()
+                                .execute(new String[]{
+                                        Integer.toString(currentPage),
+                                        prefs.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_most_popular))
+                                });
+                        currentPage += 1;
+                }
+            }
+        });
         return rootView;
     }
 
     private void updateMovies() {
         FetchMoviesTask moviesTask = new FetchMoviesTask();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        currentPage = 1;  // This is only called on startup, or when prefs change
+        movieAdapter.clear();
         apiParams = new String[] {
                 Integer.toString(currentPage),
                 prefs.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_most_popular))
         };
-
         moviesTask.execute(apiParams);
+        currentPage += 1;
     }
 
     @Override
@@ -163,9 +185,12 @@ public class MoviesFragment extends Fragment {
         @Override
         protected Movie[] doInBackground(String[]... params) {
 
+
             if (params.length == 0) {
                 return null;
             }
+
+            fetchingMore = true;
 
             HttpURLConnection movieUrlConnection = null;
             BufferedReader movieReader = null;
@@ -200,7 +225,7 @@ public class MoviesFragment extends Fragment {
 
                 popMoviesJsonStr = movieBuffer.toString();
 
-                // Log.v(LOG_TAG, "Movie Data string: " + popMoviesJsonStr);
+                Log.v(LOG_TAG, "Fetch 1: Movie Data string: " + popMoviesJsonStr);
 
 
             } catch (IOException e) {
@@ -232,11 +257,14 @@ public class MoviesFragment extends Fragment {
         @Override
         protected void onPostExecute(Movie[] result) {
             if (result != null) {
-                movieAdapter.clear();
+                int currentPosition = gridView.getFirstVisiblePosition();
                 for(Movie movieStr : result) {
                     movieAdapter.add(movieStr);
                 }
+                gridView.setSelection(currentPosition+1);
+                fetchingMore = false;
             }
         }
     }
+
 }

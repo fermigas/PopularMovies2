@@ -4,10 +4,14 @@
     <string-array name="pref_sort_order_options">
         <item>@string/pref_sort_order_label_most_popular</item>
         <item>@string/pref_sort_order_label_highest_rated</item>
+        <item>@string/pref_sort_order_label_latest_releases</item>
+        <item>@string/pref_sort_order_label_highest_grossing</item>
     </string-array>
 
     <string-array name="pref_sort_order_values">
         <item>@string/pref_sort_order_most_popular</item>
         <item>@string/pref_sort_order_highest_rated</item>
+        <item>@string/pref_sort_order_latest_releases</item>
+        <item>@string/pref_sort_order_highest_grossing</item>
     </string-array>
 </resources>
