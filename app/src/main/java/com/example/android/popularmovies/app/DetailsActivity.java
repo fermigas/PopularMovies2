@@ -96,7 +96,7 @@ public class DetailsActivity extends ActionBarActivity {
                 ((TextView) rootView.findViewById(R.id.details_release_date))
                         .setText("Release Date\n" + movie.releaseDate);
                 ((TextView) rootView.findViewById(R.id.details_rating))
-                        .setText("Average Rating\n" +  movie.vote_average + "/10");
+                        .setText("Average Rating\n" +  movie.voteAverage + "/10");
 
             }
 

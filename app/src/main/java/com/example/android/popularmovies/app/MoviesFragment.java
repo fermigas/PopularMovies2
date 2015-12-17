@@ -44,6 +44,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MoviesFragment extends Fragment {
 
@@ -165,15 +166,24 @@ public class MoviesFragment extends Fragment {
 
             for(int i = 0; i < popMoviesArray.length(); i++) {
                 JSONObject movieObject = popMoviesArray.getJSONObject(i);
-
+                JSONArray  genreIDs = movieObject.getJSONArray(getString(R.string.tmdb_genre_ids));
+                int[] idList = new int[genreIDs.length()];
+                for (int j = 0; j < genreIDs.length(); j++) {
+                    idList[j] = genreIDs.getInt(j);
+                }
                 movies[i] = new Movie(
+                        idList,
+                        movieObject.getString(getString(R.string.tmdb_adult)),
+                        movieObject.getString(getString(R.string.tmdb_original_language)),
                         movieObject.getString(getString(R.string.tmdb_poster_path)),
                         movieObject.getString(getString(R.string.tmdb_overview)),
                         movieObject.getString(getString(R.string.tmdb_release_date)),
                         movieObject.getString(getString(R.string.tmdb_id)),
                         movieObject.getString(getString(R.string.tmdb_title)),
+                        movieObject.getString(getString(R.string.tmdb_video)),
                         movieObject.getInt(getString(R.string.tmdb_vote_count)),
                         movieObject.getDouble(getString(R.string.tmdb_vote_average))
+
                 );
             }
 
@@ -225,7 +235,7 @@ public class MoviesFragment extends Fragment {
 
                 popMoviesJsonStr = movieBuffer.toString();
 
-                Log.v(LOG_TAG, "Fetch 1: Movie Data string: " + popMoviesJsonStr);
+                Log.v(LOG_TAG, "Movie Data string: " + popMoviesJsonStr);
 
 
             } catch (IOException e) {

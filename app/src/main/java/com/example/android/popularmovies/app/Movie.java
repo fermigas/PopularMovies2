@@ -5,42 +5,58 @@ import android.os.Parcelable;
 
 public class Movie implements Parcelable {
 
+    int[]   genreIds;
+    String  adult;
+    String  originalLanguage;
     String  posterPath;
     String  overview;
     String  releaseDate;
     String  id;
     String  title;
+    String  video;
     int     voteCount;
-    double  vote_average;
+    double  voteAverage;
 
     public Movie (
-            String posterPath,
+            int[]   genreIds,
+            String  adult,
+            String  originalLanguage,
+            String  posterPath,
             String  overview,
             String  releaseDate,
             String  id,
             String  title,
+            String  video,
             int     voteCount,
-            double  vote_average
+            double  voteAverage
     ){
+       this.genreIds = genreIds;
+       this.adult = adult;
+       this.originalLanguage = originalLanguage;
        this.posterPath = posterPath;
        this.overview = overview;
        this.releaseDate = releaseDate;
        this.id = id;
        this.title = title;
+       this.video = video;
        this.voteCount = voteCount;
-       this.vote_average = vote_average;
+       this.voteAverage = voteAverage;
 
     }
 
 
     private Movie(Parcel in){
+        genreIds = in.createIntArray();
+        adult = in.readString();
+        originalLanguage = in.readString();
         posterPath = in.readString();
         overview = in.readString();
         releaseDate = in.readString();
         id = in.readString();
         title = in.readString();
+        video = in.readString ();
         voteCount = in.readInt();
-        vote_average = in.readDouble();
+        voteAverage = in.readDouble();
 
     }
 
@@ -52,13 +68,17 @@ public class Movie implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeIntArray(genreIds);
+        dest.writeString(adult);
+        dest.writeString(originalLanguage);
         dest.writeString(posterPath);
         dest.writeString(overview);
         dest.writeString(releaseDate);
         dest.writeString(id);
         dest.writeString(title);
+        dest.writeString(video);
         dest.writeInt(voteCount);
-        dest.writeDouble(vote_average);
+        dest.writeDouble(voteAverage);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR= new Parcelable.Creator<Movie>() {
