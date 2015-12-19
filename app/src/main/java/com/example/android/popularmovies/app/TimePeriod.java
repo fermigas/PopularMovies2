@@ -66,11 +66,26 @@ public class TimePeriod {
             case "before_1920":
                 getBefore1920s();
                 break;
+            case "next_week":
+                getNextWeek();
+                break;
+            case  "next_month":
+                getNextMonth();
+                break;
+            case  "next_year":
+                getNextYear();
+                break;
+            case  "all_future_releases":
+                getAllFutureReleases();
+                break;
+
             default:
                 all();
         }
 
     }
+
+
 
     private void get2010s() {
         onOrAfterThisDate = "2010-1-1";   onOrBeforeThisDate = "2010-12-31";
@@ -116,6 +131,37 @@ public class TimePeriod {
         onOrAfterThisDate = "";   onOrBeforeThisDate = "1919-12-31";
     }
 
+
+    private void getAllFutureReleases() {
+
+        Calendar c = Calendar.getInstance();
+        Date date = new Date();
+        c.setTime(date);
+
+        // Today
+        onOrAfterThisDate = toTmdbDateString(c);
+
+        onOrBeforeThisDate="";
+    }
+
+    private void getNextYear() {
+
+        Calendar c = Calendar.getInstance();
+        Date date = new Date();
+        c.setTime(date);
+
+        // First day of next year
+        c.add(Calendar.YEAR, 1);   // Next year
+        c.set(Calendar.DAY_OF_YEAR, 1);
+        onOrAfterThisDate = toTmdbDateString(c);
+
+        // Last day of next year
+        c.add(Calendar.YEAR, 1);
+        c.set(Calendar.DAY_OF_YEAR, -1);  // Don't include Jan 1
+        onOrBeforeThisDate = toTmdbDateString(c);
+
+    }
+
     private void getThisYearToDate() {
 
         Calendar c = Calendar.getInstance();
@@ -149,6 +195,23 @@ public class TimePeriod {
 
     }
 
+    private void getNextMonth() {
+
+        Calendar c = Calendar.getInstance();
+        Date date = new Date();
+        c.setTime(date);
+
+        // First day of next month
+        c.add(Calendar.MONTH, 1);   // Next month
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        onOrAfterThisDate = toTmdbDateString(c);
+
+        // Last day of month
+        c.add(Calendar.MONTH, 1);   // Next month
+        onOrBeforeThisDate = toTmdbDateString(c);
+
+    }
+
     private void all() {
         onOrBeforeThisDate = "";
         onOrAfterThisDate = "";
@@ -163,6 +226,26 @@ public class TimePeriod {
         // Days since first day of week
         int i = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
         c.add(Calendar.DATE, -i);
+        onOrAfterThisDate = toTmdbDateString(c);
+
+        // Seven days after first day of week
+        c.add(Calendar.DATE, 7);
+        onOrBeforeThisDate = toTmdbDateString(c);
+
+        return;
+    }
+
+    public void getNextWeek(){
+
+        Date date = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+
+        // First Day of this week
+        int i = c.get(Calendar.DAY_OF_WEEK) - c.getFirstDayOfWeek();
+        c.add(Calendar.DATE, -i);
+        i = c.get(Calendar.WEEK_OF_YEAR);
+        c.set(Calendar.WEEK_OF_YEAR, i+1);  // Next Week
         onOrAfterThisDate = toTmdbDateString(c);
 
         // Seven days after first day of week

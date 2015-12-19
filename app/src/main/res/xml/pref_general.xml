@@ -27,7 +27,7 @@
 
 
     <MultiSelectListPreference
-        android:dialogTitle="Select Genres"
+        android:dialogTitle="@string/pref_genres_label"
         android:entries="@array/pref_genres_options"
         android:entryValues="@array/pref_genres_values"
         android:key="@string/pref_genre_ids_key"

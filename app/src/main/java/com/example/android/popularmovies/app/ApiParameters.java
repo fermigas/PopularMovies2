@@ -36,15 +36,25 @@ public class ApiParameters {
         if( genres != "")
            builder.appendQueryParameter("with_genres", genres);
 
+        // Use primariy_release_date or you get back multile results
+        // because sometimes there are much later re-releases
+        // This can pollute results upon sorting by gross, popularity, etc.
         TimePeriod timePeriod = new TimePeriod(getPeriodPreferences());
         if(timePeriod.periodHasLowerDate()) {
-            builder.appendQueryParameter("release_date.gte", timePeriod.getLowerDate());
+            builder.appendQueryParameter("primary_release_date.gte", timePeriod.getLowerDate());
         }
         if(timePeriod.periodHasUpperDate()) {
-            builder.appendQueryParameter("release_date.lte", timePeriod.getUpperDate());
+            builder.appendQueryParameter("primary_release_date.lte", timePeriod.getUpperDate());
         }
 
         builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
+
+        // ***  TODO  Add Video Filter   *** ///
+        // ***  TODO  Sort by  Primary Release Date  //
+        // ***  TODO  mkae summaries in settings work right, in particular, periods  //
+        // ***  TODO  Sort By None   //
+        // ***  TODO  Languages      //
+
 
         uri = builder.build();
 

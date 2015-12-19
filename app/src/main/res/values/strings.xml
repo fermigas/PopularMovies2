@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
 
  <string name="app_name">Popular Movies</string>
  <string name="action_settings">Settings</string>
  <string name="title_activity_detail">Movie Details</string>
  <string name="title_activity_settings">Settings</string>
- <string name="pref_sort_order_label">Sort Order</string>
- <string name="pref_sort_order_label_most_popular">Most Popular</string>
- <string name="pref_sort_order_label_highest_rated">Highest Rated</string>
- <string name="pref_sort_order_label_latest_releases">Latest Releases</string>
- <string name="pref_sort_order_label_highest_grossing">Highest Grossing</string>
- <string name="pref_sort_order_key" translatable="false">sort_order</string>
- <string name="pref_sort_order_most_popular" translatable="false">popularity.desc</string>
- <string name="pref_sort_order_highest_rated" translatable="false">vote_average.desc</string>
- <string name="pref_sort_order_latest_releases">release_date.desc</string>
- <string name="pref_sort_order_highest_grossing">revenue.desc</string>
+
+ <!--  Logging and Erros  -->
+
+ <string name="log_error">"Error "</string>
+ <string name="log_stream_close_error">Error closing movie reader stream</string>
+
+ <!-- TMDB Base URLs  -->
+
+ <string name="tmdb_base_url" translatable="false">http://api.themoviedb.org/3/discover/movie?</string>
+ <string name="tmdb_base_image_url" translatable="false">http://image.tmdb.org/t/p/w</string>
+
+ <!-- TMDB API Keys    -->
+
  <string name="tmdb_results" translatable="false">results</string>
  <string name="tmdb_poster_path" translatable="false">poster_path</string>
  <string name="tmdb_overview" translatable="false">overview</string>
@@ -23,24 +27,40 @@
  <string name="tmdb_title" translatable="false">title</string>
  <string name="tmdb_vote_count" translatable="false">vote_count</string>
  <string name="tmdb_vote_average" translatable="false">vote_average</string>
- <string name="tmdb_base_url" translatable="false">http://api.themoviedb.org/3/discover/movie?</string>
- <string name="tmdb_sort_by_key" translatable="false">sort_by</string>
- <string name="tmdb_api_key_key" translatable="false">api_key</string>
- <string name="log_error">"Error "</string>
- <string name="log_stream_close_error">Error closing movie reader stream</string>
- <string name="tmdb_image_size_185" translatable="false">185</string>
- <string name="tmdb_image_size_342" translatable="false">342</string>
- <string name="tmdb_image_size_500" translatable="false">500</string>
- <string name="tmdb_base_image_url" translatable="false">http://image.tmdb.org/t/p/w</string>
  <string name="page">page</string>
  <string name="tmdb_adult">adult</string>
  <string name="tmdb_video">video</string>
  <string name="tmdb_original_language">original_language</string>
  <string name="tmdb_genre_ids">genre_ids</string>
- <string name="pref_genre_ids_key">genre_ids</string>
- <string name="pref_genre_ids_key_old">genre_ids_old</string>
+ <string name="tmdb_sort_by_key" translatable="false">sort_by</string>
+ <string name="tmdb_api_key_key" translatable="false">api_key</string>
+
+
+ <!-- Settings -->
+
+ <string name="pref_sort_order_label">Sort Order</string>
+ <string name="pref_sort_order_key" translatable="false">sort_order</string>
+
  <string name="pref_vote_count_label">Vote Count</string>
  <string name="pref_vote_count_key">vote_count</string>
+
+ <string name="pref_period_label">Time Period</string>
+ <string name="pref_period_key">time_period</string>
+
+ <string name="pref_genres_label">Select Genres</string>
+ <string name="pref_genre_ids_key">genre_ids</string>
+
+ <!-- Sorting IDs  -->
+
+ <string name="pref_sort_order_label_most_popular">Most Popular</string>
+ <string name="pref_sort_order_label_highest_rated">Highest Rated</string>
+ <string name="pref_sort_order_label_latest_releases">Latest Releases</string>
+ <string name="pref_sort_order_label_highest_grossing">Highest Grossing</string>
+ <string name="pref_sort_order_most_popular" translatable="false">popularity.desc</string>
+ <string name="pref_sort_order_highest_rated" translatable="false">vote_average.desc</string>
+ <string name="pref_sort_order_latest_releases">release_date.desc</string>
+ <string name="pref_sort_order_highest_grossing">revenue.desc</string>
+
 
  <!--   Vote Count List Preference Entries -->
 
@@ -62,7 +82,7 @@
  <string name="pref_vote_count_value_5000">5000</string>
 
 
- <!-- Period Preference Entries  -->
+ <!-- Time Period Preference Entries  -->
 
  <string name="pref_period_label_all">All (default)</string>
  <string name="pref_period_label_this_entire_week">This Entire Week</string>
@@ -104,7 +124,9 @@
  <string name="pref_period_value_next_year">next_year</string>
  <string name="pref_period_value_all_future">all_future_releases</string>
 
- <string name="pref_period_label">Time Period</string>
- <string name="pref_period_key">time_period</string>
+
+ <string name="tmdb_image_size_185" translatable="false">185</string>
+ <string name="tmdb_image_size_342" translatable="false">342</string>
+ <string name="tmdb_image_size_500" translatable="false">500</string>
 
 </resources>
