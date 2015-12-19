@@ -33,7 +33,7 @@
         android:key="@string/pref_genre_ids_key"
         android:summary=""
         android:defaultValue="@array/empty_array"
-        android:title="Genres"
+        android:title="@string/pref_genres_label"
         />
 
     <com.example.android.popularmovies.app.RestoreDefaultPreferences
@@ -42,7 +42,7 @@
         android:negativeButtonText="No, KEEP current values"
         android:persistent="false"
         android:positiveButtonText="Yes, RESET all values"
-        android:summary="Restore all settings to defaults values."
+        android:summary="Restore all settings to default values"
         android:title="Reset to default" >
     </com.example.android.popularmovies.app.RestoreDefaultPreferences>
 

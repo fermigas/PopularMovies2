@@ -41,37 +41,46 @@
  <string name="pref_sort_order_label">Sort Order</string>
  <string name="pref_sort_order_key" translatable="false">sort_order</string>
 
- <string name="pref_vote_count_label">Vote Count</string>
+ <string name="pref_vote_count_label">Total Number of Ratings Votes</string>
  <string name="pref_vote_count_key">vote_count</string>
 
  <string name="pref_period_label">Time Period</string>
  <string name="pref_period_key">time_period</string>
 
- <string name="pref_genres_label">Select Genres</string>
+ <string name="pref_genres_label">Genre Filters</string>
  <string name="pref_genre_ids_key">genre_ids</string>
 
  <!-- Sorting IDs  -->
 
+ <string name="pref_sort_order_label_none">None</string>
  <string name="pref_sort_order_label_most_popular">Most Popular</string>
  <string name="pref_sort_order_label_highest_rated">Highest Rated</string>
  <string name="pref_sort_order_label_latest_releases">Latest Releases</string>
  <string name="pref_sort_order_label_highest_grossing">Highest Grossing</string>
+ <string name="pref_sort_order_label_primary_release_newest_first">Primary Releases, Newest First </string>
+ <string name="pref_sort_order_label_primary_release_oldest_first">Primary Releases, Oldest First</string>
+ <string name="pref_sort_order_label_original_title">Alphabetical</string>
+
+ <string name="pref_sort_order_none">none</string>
  <string name="pref_sort_order_most_popular" translatable="false">popularity.desc</string>
  <string name="pref_sort_order_highest_rated" translatable="false">vote_average.desc</string>
  <string name="pref_sort_order_latest_releases">release_date.desc</string>
  <string name="pref_sort_order_highest_grossing">revenue.desc</string>
+ <string name="pref_sort_order_primary_release_date_newest_first">primary_release_date.desc</string>
+ <string name="pref_sort_order_primary_release_date_oldest_first">primary_release_date.asc</string>
+ <string name="pref_sort_order_primary_original_title">original_title.asc</string>
 
 
  <!--   Vote Count List Preference Entries -->
 
- <string name="pref_vote_count_label_0">Zero or More Votes</string>
- <string name="pref_vote_count_label_1">1 or More Votes</string>
- <string name="pref_vote_count_label_10">10 or More Votes</string>
- <string name="pref_vote_count_label_50">50 or More Votes</string>
- <string name="pref_vote_count_label_100">100 or More Votes</string>
- <string name="pref_vote_count_label_500">500 or More Votes</string>
- <string name="pref_vote_count_label_1000">1000 or More Votes</string>
- <string name="pref_vote_count_label_5000">5000 or More Votes</string>
+ <string name="pref_vote_count_label_0">Zero or More Ratings Votes</string>
+ <string name="pref_vote_count_label_1">1 or More Ratings Votes</string>
+ <string name="pref_vote_count_label_10">10 or More Ratings Votes</string>
+ <string name="pref_vote_count_label_50">50 or More Ratings Votes</string>
+ <string name="pref_vote_count_label_100">100 or More Ratings Votes</string>
+ <string name="pref_vote_count_label_500">500 or More Ratings Votes</string>
+ <string name="pref_vote_count_label_1000">1000 or More Ratings Votes</string>
+ <string name="pref_vote_count_label_5000">5000 or More Ratings Votes</string>
  <string name="pref_vote_count_value_0">0</string>
  <string name="pref_vote_count_value_1">1</string>
  <string name="pref_vote_count_value_10">10</string>

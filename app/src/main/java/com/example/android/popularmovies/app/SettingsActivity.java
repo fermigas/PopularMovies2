@@ -51,6 +51,7 @@ public class SettingsActivity extends PreferenceActivity
 
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sort_order_key)));
         bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_vote_count_key)));
+        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_period_key)));
         bindMultSelectListPreference(findPreference(getString(R.string.pref_genre_ids_key)));
         bindPreferenceResetToValue(findPreference("resetDialog"));
 

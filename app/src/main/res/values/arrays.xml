@@ -2,17 +2,25 @@
 <resources>
 
     <string-array name="pref_sort_order_options">
+        <item>@string/pref_sort_order_label_none</item>
         <item>@string/pref_sort_order_label_most_popular</item>
         <item>@string/pref_sort_order_label_highest_rated</item>
         <item>@string/pref_sort_order_label_latest_releases</item>
         <item>@string/pref_sort_order_label_highest_grossing</item>
+        <item>@string/pref_sort_order_label_primary_release_newest_first</item>
+        <item>@string/pref_sort_order_label_primary_release_oldest_first</item>
+        <item>@string/pref_sort_order_label_original_title</item>
     </string-array>
 
     <string-array name="pref_sort_order_values">
+        <item>@string/pref_sort_order_none</item>
         <item>@string/pref_sort_order_most_popular</item>
         <item>@string/pref_sort_order_highest_rated</item>
         <item>@string/pref_sort_order_latest_releases</item>
         <item>@string/pref_sort_order_highest_grossing</item>
+        <item>@string/pref_sort_order_primary_release_date_newest_first</item>
+        <item>@string/pref_sort_order_primary_release_date_oldest_first</item>
+        <item>@string/pref_sort_order_primary_original_title</item>
     </string-array>
 
     <string-array name="pref_vote_count_options">

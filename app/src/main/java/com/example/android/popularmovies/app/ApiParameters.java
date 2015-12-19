@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class ApiParameters {
@@ -29,11 +30,15 @@ public class ApiParameters {
         Uri.Builder builder = uri.buildUpon();
 
         builder.appendQueryParameter("page", String.valueOf(mcurrentPage));
-        builder.appendQueryParameter("sort_by", getSortOrder());
+
+        String sortOrder = getSortOrder();
+        if(sortOrder != null && !sortOrder.equals("none") )
+            builder.appendQueryParameter("sort_by", sortOrder);
+
         builder.appendQueryParameter("vote_count.gte", getVoteCount());
 
         String genres = getGenresAsCommaSeparatedNumbers();
-        if( genres != "")
+        if(!genres.equals(""))
            builder.appendQueryParameter("with_genres", genres);
 
         // Use primariy_release_date or you get back multile results
@@ -48,13 +53,6 @@ public class ApiParameters {
         }
 
         builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
-
-        // ***  TODO  Add Video Filter   *** ///
-        // ***  TODO  Sort by  Primary Release Date  //
-        // ***  TODO  mkae summaries in settings work right, in particular, periods  //
-        // ***  TODO  Sort By None   //
-        // ***  TODO  Languages      //
-
 
         uri = builder.build();
 
