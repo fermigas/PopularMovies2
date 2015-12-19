@@ -16,11 +16,9 @@
 package com.example.android.popularmovies.app;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,17 +42,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 public class MoviesFragment extends Fragment {
 
     private ArrayList<Movie> movieArray;
     private MovieAdapter movieAdapter;
-    // private String[] apiParams;
     private int currentPage;
     private Boolean fetchingMore = true;
     private GridView gridView;
+    private Boolean noMoreResults = false;
 
     public MoviesFragment() {
     }
@@ -119,8 +115,9 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int last = firstVisibleItem + visibleItemCount;
-                if((last == totalItemCount) && !fetchingMore){
-                        new FetchMoviesTask().execute(getApiParams());
+                if((last == totalItemCount) && !fetchingMore && !noMoreResults){
+                        ApiParameters apiParams = new ApiParameters(getActivity(), currentPage);
+                        new FetchMoviesTask().execute(apiParams);
                         currentPage += 1;
                 }
             }
@@ -128,34 +125,18 @@ public class MoviesFragment extends Fragment {
         return rootView;
     }
 
-    private void updateMovies() {
+    public void updateMovies() {
         currentPage = 1;  // This is only called on startup, or when prefs change
+        noMoreResults = false;  // New data set on startup and on prefs changing
         movieAdapter.clear();
 
         FetchMoviesTask moviesTask = new FetchMoviesTask();
 
-        String[] apiParams = getApiParams();
+        ApiParameters apiParams = new ApiParameters(getActivity(), currentPage);
         moviesTask.execute(apiParams);
         currentPage += 1;
     }
 
-    private String[] getApiParams() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
-        List<String> params = new ArrayList<String>();
-        params.add(Integer.toString(currentPage));
-        params.add(prefs.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_most_popular)));
-        Set<String> genres = prefs.getStringSet(getString(R.string.pref_genre_ids_key), null);
-        if ( genres != null && !genres.isEmpty()  ) {
-           params.add(genres.toString()
-                        .replaceAll("\\s+", "").replace("[", "").replace("]", "") );
-        }
-
-        String[] apiParams = new String[params.size()];
-        apiParams = params.toArray(apiParams);
-
-        return apiParams;
-    }
 
     @Override
     public void onStart() {
@@ -163,8 +144,8 @@ public class MoviesFragment extends Fragment {
         updateMovies();
     }
 
-    // *** TODO  Extract this to  separate file?   onPostExecute() uses movieAdapter, though
-    public class FetchMoviesTask extends AsyncTask<String[], Void, Movie[]> {
+
+    public class FetchMoviesTask extends AsyncTask<ApiParameters, Void, Movie[]> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
@@ -173,6 +154,11 @@ public class MoviesFragment extends Fragment {
 
             JSONObject popMoviesJson = new JSONObject(popMoviesJsonStr);
             JSONArray popMoviesArray = popMoviesJson.getJSONArray(getString(R.string.tmdb_results));
+
+            if(popMoviesArray.length() < 20)
+                noMoreResults = true;
+            else
+                noMoreResults = false;
 
             Movie[] movies = new Movie[popMoviesArray.length()];
 
@@ -199,18 +185,15 @@ public class MoviesFragment extends Fragment {
                 );
             }
 
+
             return movies;
         }
 
 
 
         @Override
-        protected Movie[] doInBackground(String[]... params) {
+        protected Movie[] doInBackground(ApiParameters... params) {
 
-
-            if (params.length == 0) {
-                return null;
-            }
 
             fetchingMore = true;
 
@@ -220,24 +203,7 @@ public class MoviesFragment extends Fragment {
 
             try {
 
-                Uri builtMoviesUri;
-
-                if(params[0].length < 3) {
-                    builtMoviesUri = Uri.parse(getString(R.string.tmdb_base_url)).buildUpon()
-                            .appendQueryParameter(getString(R.string.page), params[0][0])
-                            .appendQueryParameter(getString(R.string.tmdb_sort_by_key), params[0][1])
-                            .appendQueryParameter(getString(R.string.tmdb_api_key_key), BuildConfig.THE_MOVIE_DB_API_KEY)
-                            .build();
-                }
-                else{
-                    builtMoviesUri = Uri.parse(getString(R.string.tmdb_base_url)).buildUpon()
-                            .appendQueryParameter(getString(R.string.page), params[0][0])
-                            .appendQueryParameter(getString(R.string.tmdb_sort_by_key), params[0][1])
-                            .appendQueryParameter("with_genres", params[0][2])
-                            .appendQueryParameter(getString(R.string.tmdb_api_key_key), BuildConfig.THE_MOVIE_DB_API_KEY)
-                            .build();
-                }
-
+                Uri builtMoviesUri =  params[0].buildMoviesUri();
                 URL movieURL = new URL(builtMoviesUri.toString());
 
                 movieUrlConnection = (HttpURLConnection) movieURL.openConnection();

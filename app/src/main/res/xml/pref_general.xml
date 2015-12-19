@@ -18,6 +18,13 @@
         android:entryValues="@array/pref_vote_count_values"
         android:entries="@array/pref_vote_count_options" />
 
+    <ListPreference
+        android:title="@string/pref_period_label"
+        android:key="@string/pref_period_key"
+        android:defaultValue="all"
+        android:entryValues="@array/pref_period_values"
+        android:entries="@array/pref_period_options" />
+
 
     <MultiSelectListPreference
         android:dialogTitle="Select Genres"

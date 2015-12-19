@@ -37,6 +37,50 @@
         <item>@string/pref_vote_count_value_5000</item>
     </string-array>
 
+    <string-array name="pref_period_options">
+        <item>@string/pref_period_label_all</item>
+        <item>@string/pref_period_label_this_entire_week</item>
+        <item>@string/pref_period_label_this_entire_month</item>
+        <item>@string/pref_period_label_this_year_to_date</item>
+        <item>@string/pref_period_label_2010s</item>
+        <item>@string/pref_period_label_2000s</item>
+        <item>@string/pref_period_label_1990a</item>
+        <item>@string/pref_period_label_1980s</item>
+        <item>@string/pref_period_label_1970s</item>
+        <item>@string/pref_period_label_1960s</item>
+        <item>@string/pref_period_label_1950s</item>
+        <item>@string/pref_period_label_1940s</item>
+        <item>@string/pref_period_label_1930s</item>
+        <item>@string/pref_period_label_1920s</item>
+        <item>@string/pref_period_label_before_1920s</item>
+        <item>@string/pref_period_label_next_week</item>
+        <item>@string/pref_period_label_next_month</item>
+        <item>@string/pref_period_label_next_year</item>
+        <item>@string/pref_period_label_all_future</item>
+    </string-array>
+
+    <string-array name="pref_period_values">
+        <item>@string/pref_period_value_all</item>
+        <item>@string/pref_period_value_this_entire_week</item>
+        <item>@string/pref_period_value_this_entire_month</item>
+        <item>@string/pref_period_value_this_year</item>
+        <item>@string/pref_period_value_2010s</item>
+        <item>@string/pref_period_value_2000s</item>
+        <item>@string/pref_period_value_1990a</item>
+        <item>@string/pref_period_value_1980s</item>
+        <item>@string/pref_period_value_1970s</item>
+        <item>@string/pref_period_value_1960s</item>
+        <item>@string/pref_period_value_1950s</item>
+        <item>@string/pref_period_value_1940s</item>
+        <item>@string/pref_period_value_1930s</item>
+        <item>@string/pref_period_value_1920s</item>
+        <item>@string/pref_period_value_before_1920s</item>
+        <item>@string/pref_period_value_next_week</item>
+        <item>@string/pref_period_value_next_month</item>
+        <item>@string/pref_period_value_next_year</item>
+        <item>@string/pref_period_value_all_future</item>
+    </string-array>
+
     <string-array name="pref_genres_options">
         <item>Action</item>
         <item>Adventure</item>
@@ -108,4 +152,6 @@
 
 
     <string-array name="empty_array"/>
+
+
 </resources>

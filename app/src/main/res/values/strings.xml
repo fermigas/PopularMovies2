@@ -61,4 +61,50 @@
  <string name="pref_vote_count_value_1000">1000</string>
  <string name="pref_vote_count_value_5000">5000</string>
 
+
+ <!-- Period Preference Entries  -->
+
+ <string name="pref_period_label_all">All (default)</string>
+ <string name="pref_period_label_this_entire_week">This Entire Week</string>
+ <string name="pref_period_label_this_entire_month">This Entire Month</string>
+ <string name="pref_period_label_this_year_to_date">This Year To Date</string>
+ <string name="pref_period_label_2010s">2010s</string>
+ <string name="pref_period_label_2000s">2000s</string>
+ <string name="pref_period_label_1990a">1990s</string>
+ <string name="pref_period_label_1980s">1980s</string>
+ <string name="pref_period_label_1970s">1970s</string>
+ <string name="pref_period_label_1960s">1960s</string>
+ <string name="pref_period_label_1950s">1950s</string>
+ <string name="pref_period_label_1940s">1940s</string>
+ <string name="pref_period_label_1930s">1930s</string>
+ <string name="pref_period_label_1920s">1920s</string>
+ <string name="pref_period_label_before_1920s">Before 1920s</string>
+ <string name="pref_period_label_next_week">Next Week</string>
+ <string name="pref_period_label_next_month">Next Month</string>
+ <string name="pref_period_label_next_year">Next Year</string>
+ <string name="pref_period_label_all_future">All Future Releases</string>
+
+ <string name="pref_period_value_all">all</string>
+ <string name="pref_period_value_this_entire_week">this_week</string>
+ <string name="pref_period_value_this_entire_month">this_month</string>
+ <string name="pref_period_value_this_year">this_year_to_date</string>
+ <string name="pref_period_value_2010s">2010</string>
+ <string name="pref_period_value_2000s">2000</string>
+ <string name="pref_period_value_1990a">1990</string>
+ <string name="pref_period_value_1980s">1980</string>
+ <string name="pref_period_value_1970s">1970</string>
+ <string name="pref_period_value_1960s">1960</string>
+ <string name="pref_period_value_1950s">1950</string>
+ <string name="pref_period_value_1940s">1940</string>
+ <string name="pref_period_value_1930s">1930</string>
+ <string name="pref_period_value_1920s">1920</string>
+ <string name="pref_period_value_before_1920s">before_1920</string>
+ <string name="pref_period_value_next_week">next_week</string>
+ <string name="pref_period_value_next_month">next_month</string>
+ <string name="pref_period_value_next_year">next_year</string>
+ <string name="pref_period_value_all_future">all_future_releases</string>
+
+ <string name="pref_period_label">Time Period</string>
+ <string name="pref_period_key">time_period</string>
+
 </resources>
