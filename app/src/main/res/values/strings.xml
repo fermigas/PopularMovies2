@@ -37,5 +37,28 @@
  <string name="tmdb_video">video</string>
  <string name="tmdb_original_language">original_language</string>
  <string name="tmdb_genre_ids">genre_ids</string>
+ <string name="pref_genre_ids_key">genre_ids</string>
+ <string name="pref_genre_ids_key_old">genre_ids_old</string>
+ <string name="pref_vote_count_label">Vote Count</string>
+ <string name="pref_vote_count_key">vote_count</string>
+
+ <!--   Vote Count List Preference Entries -->
+
+ <string name="pref_vote_count_label_0">Zero or More Votes</string>
+ <string name="pref_vote_count_label_1">1 or More Votes</string>
+ <string name="pref_vote_count_label_10">10 or More Votes</string>
+ <string name="pref_vote_count_label_50">50 or More Votes</string>
+ <string name="pref_vote_count_label_100">100 or More Votes</string>
+ <string name="pref_vote_count_label_500">500 or More Votes</string>
+ <string name="pref_vote_count_label_1000">1000 or More Votes</string>
+ <string name="pref_vote_count_label_5000">5000 or More Votes</string>
+ <string name="pref_vote_count_value_0">0</string>
+ <string name="pref_vote_count_value_1">1</string>
+ <string name="pref_vote_count_value_10">10</string>
+ <string name="pref_vote_count_value_50">50</string>
+ <string name="pref_vote_count_value_100">100</string>
+ <string name="pref_vote_count_value_500">500</string>
+ <string name="pref_vote_count_value_1000">1000</string>
+ <string name="pref_vote_count_value_5000">5000</string>
 
 </resources>

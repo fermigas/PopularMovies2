@@ -45,12 +45,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class MoviesFragment extends Fragment {
 
     private ArrayList<Movie> movieArray;
     private MovieAdapter movieAdapter;
-    private String[] apiParams;
+    // private String[] apiParams;
     private int currentPage;
     private Boolean fetchingMore = true;
     private GridView gridView;
@@ -119,12 +120,7 @@ public class MoviesFragment extends Fragment {
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int last = firstVisibleItem + visibleItemCount;
                 if((last == totalItemCount) && !fetchingMore){
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                        new FetchMoviesTask()
-                                .execute(new String[]{
-                                        Integer.toString(currentPage),
-                                        prefs.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_most_popular))
-                                });
+                        new FetchMoviesTask().execute(getApiParams());
                         currentPage += 1;
                 }
             }
@@ -133,16 +129,32 @@ public class MoviesFragment extends Fragment {
     }
 
     private void updateMovies() {
-        FetchMoviesTask moviesTask = new FetchMoviesTask();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         currentPage = 1;  // This is only called on startup, or when prefs change
         movieAdapter.clear();
-        apiParams = new String[] {
-                Integer.toString(currentPage),
-                prefs.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_most_popular))
-        };
+
+        FetchMoviesTask moviesTask = new FetchMoviesTask();
+
+        String[] apiParams = getApiParams();
         moviesTask.execute(apiParams);
         currentPage += 1;
+    }
+
+    private String[] getApiParams() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        List<String> params = new ArrayList<String>();
+        params.add(Integer.toString(currentPage));
+        params.add(prefs.getString(getString(R.string.pref_sort_order_key), getString(R.string.pref_sort_order_most_popular)));
+        Set<String> genres = prefs.getStringSet(getString(R.string.pref_genre_ids_key), null);
+        if ( genres != null && !genres.isEmpty()  ) {
+           params.add(genres.toString()
+                        .replaceAll("\\s+", "").replace("[", "").replace("]", "") );
+        }
+
+        String[] apiParams = new String[params.size()];
+        apiParams = params.toArray(apiParams);
+
+        return apiParams;
     }
 
     @Override
@@ -208,11 +220,23 @@ public class MoviesFragment extends Fragment {
 
             try {
 
-                Uri builtMoviesUri = Uri.parse(getString(R.string.tmdb_base_url)).buildUpon()
-                        .appendQueryParameter(getString(R.string.page), params[0][0])
-                        .appendQueryParameter(getString(R.string.tmdb_sort_by_key), params[0][1])
-                        .appendQueryParameter(getString(R.string.tmdb_api_key_key), BuildConfig.THE_MOVIE_DB_API_KEY)
-                        .build();
+                Uri builtMoviesUri;
+
+                if(params[0].length < 3) {
+                    builtMoviesUri = Uri.parse(getString(R.string.tmdb_base_url)).buildUpon()
+                            .appendQueryParameter(getString(R.string.page), params[0][0])
+                            .appendQueryParameter(getString(R.string.tmdb_sort_by_key), params[0][1])
+                            .appendQueryParameter(getString(R.string.tmdb_api_key_key), BuildConfig.THE_MOVIE_DB_API_KEY)
+                            .build();
+                }
+                else{
+                    builtMoviesUri = Uri.parse(getString(R.string.tmdb_base_url)).buildUpon()
+                            .appendQueryParameter(getString(R.string.page), params[0][0])
+                            .appendQueryParameter(getString(R.string.tmdb_sort_by_key), params[0][1])
+                            .appendQueryParameter("with_genres", params[0][2])
+                            .appendQueryParameter(getString(R.string.tmdb_api_key_key), BuildConfig.THE_MOVIE_DB_API_KEY)
+                            .build();
+                }
 
                 URL movieURL = new URL(builtMoviesUri.toString());
 

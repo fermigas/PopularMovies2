@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <ListPreference
         android:title="@string/pref_sort_order_label"
         android:key="@string/pref_sort_order_key"
@@ -10,4 +11,32 @@
         android:entryValues="@array/pref_sort_order_values"
         android:entries="@array/pref_sort_order_options" />
 
-</PreferenceScreen>
+    <ListPreference
+        android:title="@string/pref_vote_count_label"
+        android:key="@string/pref_vote_count_key"
+        android:defaultValue="0"
+        android:entryValues="@array/pref_vote_count_values"
+        android:entries="@array/pref_vote_count_options" />
+
+
+    <MultiSelectListPreference
+        android:dialogTitle="Select Genres"
+        android:entries="@array/pref_genres_options"
+        android:entryValues="@array/pref_genres_values"
+        android:key="@string/pref_genre_ids_key"
+        android:summary=""
+        android:defaultValue="@array/empty_array"
+        android:title="Genres"
+        />
+
+    <com.example.android.popularmovies.app.RestoreDefaultPreferences
+        android:dialogMessage="Restore values to their defaults?"
+        android:key="resetDialog"
+        android:negativeButtonText="No, KEEP current values"
+        android:persistent="false"
+        android:positiveButtonText="Yes, RESET all values"
+        android:summary="Restore all settings to defaults values."
+        android:title="Reset to default" >
+    </com.example.android.popularmovies.app.RestoreDefaultPreferences>
+
+ </PreferenceScreen>
