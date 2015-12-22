@@ -100,7 +100,7 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 Movie movie = movieAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), DetailsActivity.class);
+                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
                 intent.putExtra("movie", movie);
                 startActivity(intent);
             }
