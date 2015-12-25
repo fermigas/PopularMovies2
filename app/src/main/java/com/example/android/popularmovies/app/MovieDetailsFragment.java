@@ -14,6 +14,20 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+
+// TODO  Generalize Api Code to support movies, reviews and trailers (and maybe more)
+// TODO Add AsyncTask to retrieve trailers
+//    TODO View List & List Item for trailers
+// TODO Add AsyncTask to retrieve Reviews
+//    TODO  View List and List Item for reviews
+// TODO Organize movie details fragment layout to support
+//         App Bar
+//         Favorites Button
+//         Shrunken Overview
+//         Trailers section
+//         Reviews Section
+// TODO Add setting to chose number of movie columns shown (1,2,3,4)?  Tablet could be a problem
+
 public class MovieDetailsFragment extends Fragment {
 
     private String mMovieStr;

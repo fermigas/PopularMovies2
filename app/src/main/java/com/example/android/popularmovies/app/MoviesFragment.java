@@ -116,7 +116,7 @@ public class MoviesFragment extends Fragment {
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int last = firstVisibleItem + visibleItemCount;
                 if((last == totalItemCount) && !fetchingMore && !noMoreResults){
-                        ApiParameters apiParams = new ApiParameters(getActivity(), currentPage);
+                        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
                         new FetchMoviesTask().execute(apiParams);
                         currentPage += 1;
                 }
@@ -132,7 +132,7 @@ public class MoviesFragment extends Fragment {
 
         FetchMoviesTask moviesTask = new FetchMoviesTask();
 
-        ApiParameters apiParams = new ApiParameters(getActivity(), currentPage);
+        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
         moviesTask.execute(apiParams);
         currentPage += 1;
     }
@@ -145,7 +145,7 @@ public class MoviesFragment extends Fragment {
     }
 
 
-    public class FetchMoviesTask extends AsyncTask<ApiParameters, Void, Movie[]> {
+    public class FetchMoviesTask extends AsyncTask<TmdbApiParameters, Void, Movie[]> {
 
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
@@ -192,7 +192,7 @@ public class MoviesFragment extends Fragment {
 
 
         @Override
-        protected Movie[] doInBackground(ApiParameters... params) {
+        protected Movie[] doInBackground(TmdbApiParameters... params) {
 
 
             fetchingMore = true;
