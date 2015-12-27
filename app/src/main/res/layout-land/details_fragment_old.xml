@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,15 +8,19 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     tools:context=".MovieDetailsActivity"
-    >
+    android:background="@android:color/black">
 
+    <ListView
+        android:id="@+id/listview_movie_review"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <TextView
         android:id="@+id/details_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="@dimen/abc_text_size_large_material"
-        />
+        android:textColor="@android:color/white" />
 
     <LinearLayout
         android:paddingTop="@dimen/activity_vertical_margin"
@@ -46,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                />
+                android:textColor="@android:color/white" />
 
             <TextView
                 android:id="@+id/details_rating"
@@ -54,7 +58,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                 />
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
 
@@ -63,16 +67,11 @@
 
     <TextView
         android:id="@+id/details_overview"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:scrollbars="vertical"
-         />
-
-    <ListView
-        android:id="@+id/listview_movie_review"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+        android:textColor="@android:color/white" />
 
 
-</LinearLayout>
+
+</FrameLayout>

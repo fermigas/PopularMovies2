@@ -10,10 +10,16 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 // TODO  Generalize Api Code to support movies, reviews and trailers (and maybe more)
@@ -33,7 +39,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
-    private String mMovieStr;
+    ArrayAdapter<String> movieReviewAdapter;
     private Movie movie;
 
     public MovieDetailsFragment() {
@@ -46,10 +52,33 @@ public class MovieDetailsFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.details_fragment, container, false);
 
+
         getMovieFromParcelableExtra();
         showAllMovieData(rootView);
 
+        showMovieReviews(rootView);
+
         return rootView;
+    }
+
+    private void showMovieReviews(View rootView) {
+
+     // *** TODO Replace Fake Data ***  //
+        String[] fakeReviews = {
+                "There is a lot",
+                "maybe too much",
+                "so fun, bumkin"
+        };
+
+        List<String> allFakeReviews = new ArrayList<>(Arrays.asList(fakeReviews));
+        movieReviewAdapter =
+                new ArrayAdapter<>(
+                        getActivity(),
+                        R.layout.list_item_movie_review,
+                        R.id.list_item_movie_review_textview,
+                        allFakeReviews);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_review);
+        listView.setAdapter(movieReviewAdapter);
     }
 
     private void getMovieFromParcelableExtra() {
