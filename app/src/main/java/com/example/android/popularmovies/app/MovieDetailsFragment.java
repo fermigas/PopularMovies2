@@ -37,34 +37,60 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.details_fragment, container, false);
-
         Intent intent = getActivity().getIntent();
+
+        showAllMovieData(rootView, intent);
+
+        return rootView;
+    }
+
+    private void showAllMovieData(View rootView, Intent intent) {
         if (intent != null && intent.hasExtra("movie")) {
             Movie movie = intent.getParcelableExtra("movie");
 
-            String fullPosterPath =
-                    getContext().getString(R.string.tmdb_base_image_url) +
-                            getContext().getString(R.string.tmdb_image_size_342) +
-                            movie.posterPath;
-            ImageView imageView = (ImageView) rootView.findViewById(R.id.details_movie_poster);
-            Picasso.with(getContext()).load(fullPosterPath).into(imageView);
-
-            ((TextView) rootView.findViewById(R.id.details_title)).setText(movie.title);
-            TextView tv = ((TextView) rootView.findViewById(R.id.details_overview));
-            tv.setMovementMethod(new ScrollingMovementMethod());
-            tv.setText(movie.overview);
-            ((TextView) rootView.findViewById(R.id.details_release_date))
-                    .setText("Release Date\n" + movie.releaseDate);
-            ((TextView) rootView.findViewById(R.id.details_rating))
-                    .setText("Average Rating\n" + movie.voteAverage + "/10");
+            showMovieDetails(rootView, movie);
 
         }
+    }
 
-        return rootView;
+    private void showMovieDetails(View rootView, Movie movie) {
+        showMoviePoster(rootView, movie);
+        showMovieTitle(rootView, movie);
+        showScrollingMovieOverview(rootView, movie);
+        showMovieReleaseDate(rootView, movie);
+        showMovieVoteAverage(rootView, movie);
+    }
+
+    private void showMovieVoteAverage(View rootView, Movie movie) {
+        ((TextView) rootView.findViewById(R.id.details_rating))
+                .setText(getString(R.string.movie_details_vote_average) + movie.voteAverage + "/10");
+    }
+
+    private void showMovieReleaseDate(View rootView, Movie movie) {
+        ((TextView) rootView.findViewById(R.id.details_release_date))
+                .setText(getString(R.string.movie_details_release_date) + movie.releaseDate);
+    }
+
+    private void showScrollingMovieOverview(View rootView, Movie movie) {
+        TextView tv = ((TextView) rootView.findViewById(R.id.details_overview));
+        tv.setMovementMethod(new ScrollingMovementMethod());
+        tv.setText(movie.overview);
+    }
+
+    private void showMovieTitle(View rootView, Movie movie) {
+        ((TextView) rootView.findViewById(R.id.details_title)).setText(movie.title);
+    }
+
+    private void showMoviePoster(View rootView, Movie movie) {
+        String fullPosterPath =
+                getContext().getString(R.string.tmdb_base_image_url) +
+                        getContext().getString(R.string.tmdb_image_size_342) +
+                        movie.posterPath;
+        ImageView imageView = (ImageView) rootView.findViewById(R.id.details_movie_poster);
+        Picasso.with(getContext()).load(fullPosterPath).into(imageView);
     }
 
     @Override

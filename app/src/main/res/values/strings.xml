@@ -137,5 +137,7 @@
  <string name="tmdb_image_size_185" translatable="false">185</string>
  <string name="tmdb_image_size_342" translatable="false">342</string>
  <string name="tmdb_image_size_500" translatable="false">500</string>
+ <string name="movie_details_vote_average">Average Rating\n</string>
+ <string name="movie_details_release_date">Release Date\n</string>
 
 </resources>
