@@ -39,6 +39,7 @@ public class MovieDetailsFragment extends Fragment {
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
     ArrayAdapter<String> movieReviewsAdapter;
+    ArrayAdapter<String> movieTrailersAdapter;
     private Movie movie;
 
     public MovieDetailsFragment() {
@@ -61,6 +62,8 @@ public class MovieDetailsFragment extends Fragment {
         getMovieFromParcelableExtra();
         showAllMovieData(rootView);
 
+        showFakeMovieTrailers(rootView);
+
         showMovieReviews(rootView);
 
         return rootView;
@@ -80,33 +83,24 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
-    private void showFakeMovieReviews(View rootView) {
+    private void showFakeMovieTrailers(View rootView) {
 
      // *** TODO Replace Fake Data ***  //
-        String[] fakeReviews = {
-                "There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+        String[] fakeTrailers = {
+                "There is a lot.   \nAnd a lot more, too.  \nAnd even more.  \nWhat is going to \nhappen with all this data?",
                 "maybe too much. There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
-                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
                 "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?"
         };
 
-        List<String> allFakeReviews = new ArrayList<>(Arrays.asList(fakeReviews));
-        movieReviewsAdapter =
+        List<String> allFakeTrailers = new ArrayList<>(Arrays.asList(fakeTrailers));
+        movieTrailersAdapter =
                 new ArrayAdapter<>(
                         getActivity(),
-                        R.layout.list_item_movie_review,
-                        R.id.list_item_movie_review_textview,
-                        allFakeReviews);
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_review);
-        listView.setAdapter(movieReviewsAdapter);
+                        R.layout.list_item_movie_trailer,
+                        R.id.list_item_movie_trailer_textview,
+                        allFakeTrailers);
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
+        listView.setAdapter(movieTrailersAdapter);
     }
 
     private void getMovieFromParcelableExtra() {
@@ -144,7 +138,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showScrollingMovieOverview(View rootView) {
         TextView tv = ((TextView) rootView.findViewById(R.id.details_overview));
-        tv.setMovementMethod(new ScrollingMovementMethod());
+ //       tv.setMovementMethod(new ScrollingMovementMethod());
         tv.setText(movie.overview);
     }
 
