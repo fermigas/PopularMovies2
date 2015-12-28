@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,13 +38,19 @@ public class MovieDetailsFragment extends Fragment {
 
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
-    ArrayAdapter<String> movieReviewAdapter;
+    ArrayAdapter<String> movieReviewsAdapter;
     private Movie movie;
 
     public MovieDetailsFragment() {
         setHasOptionsMenu(true);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        FetchMovieReviewsTask movieReviews = new FetchMovieReviewsTask(getActivity(), movieReviewsAdapter);
+        movieReviews.execute(movie.id);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -63,22 +68,45 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieReviews(View rootView) {
 
+        // List<String> allFakeReviews = new ArrayList<>(Arrays.asList(fakeReviews));
+        movieReviewsAdapter =
+                new ArrayAdapter<>(
+                        getActivity(),
+                        R.layout.list_item_movie_review,
+                        R.id.list_item_movie_review_textview,
+                        new ArrayList<String>() );
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_review);
+        listView.setAdapter(movieReviewsAdapter);
+
+    }
+
+    private void showFakeMovieReviews(View rootView) {
+
      // *** TODO Replace Fake Data ***  //
         String[] fakeReviews = {
-                "There is a lot",
-                "maybe too much",
-                "so fun, bumkin"
+                "There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "maybe too much. There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?",
+                "so fun, bumkin . There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?There is a lot.   And a lot more, too.  And even more.  What is going to happen with all this data?"
         };
 
         List<String> allFakeReviews = new ArrayList<>(Arrays.asList(fakeReviews));
-        movieReviewAdapter =
+        movieReviewsAdapter =
                 new ArrayAdapter<>(
                         getActivity(),
                         R.layout.list_item_movie_review,
                         R.id.list_item_movie_review_textview,
                         allFakeReviews);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_review);
-        listView.setAdapter(movieReviewAdapter);
+        listView.setAdapter(movieReviewsAdapter);
     }
 
     private void getMovieFromParcelableExtra() {

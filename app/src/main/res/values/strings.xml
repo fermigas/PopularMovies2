@@ -139,5 +139,6 @@
  <string name="tmdb_image_size_500" translatable="false">500</string>
  <string name="movie_details_vote_average">Average Rating\n</string>
  <string name="movie_details_release_date">Release Date\n</string>
+ <string name="movie_review_content">content</string>
 
 </resources>
