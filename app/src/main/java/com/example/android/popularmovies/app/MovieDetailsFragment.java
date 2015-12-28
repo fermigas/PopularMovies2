@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -51,9 +50,13 @@ public class MovieDetailsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        String movieReviewsUrl = getMovieReviewUrl(movie.id);
+        String movieReviewsUrl = getMovieReviewsUrl(movie.id);
         FetchMovieReviewsTask movieReviews = new FetchMovieReviewsTask(getActivity(), movieReviewsUrl, movieReviewsAdapter);
         movieReviews.execute();
+
+        String movieTrailersUrl = getMovieTrailersUrl(movie.id);
+        FetchMovieTrailersTask movieTrailers = new FetchMovieTrailersTask(getActivity(), movieTrailersUrl, movieTrailersAdapter);
+        movieTrailers.execute();
     }
 
     @Override
@@ -65,7 +68,8 @@ public class MovieDetailsFragment extends Fragment {
         getMovieFromParcelableExtra();
         showAllMovieData(rootView);
 
-        showFakeMovieTrailers(rootView);
+        // showFakeMovieTrailers(rootView);
+        showMovieTrailers(rootView);
 
         showMovieReviews(rootView);
 
@@ -84,6 +88,19 @@ public class MovieDetailsFragment extends Fragment {
         ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_review);
         listView.setAdapter(movieReviewsAdapter);
 
+    }
+
+    private void showMovieTrailers(View rootView) {
+
+        // List<String> allFakeTrailers = new ArrayList<>(Arrays.asList(fakeTrailers));
+        movieTrailersAdapter =
+                new ArrayAdapter<>(
+                        getActivity(),
+                        R.layout.list_item_movie_trailer,
+                        R.id.list_item_movie_trailer_textview,
+                        new ArrayList<String>() );
+        ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
+        listView.setAdapter(movieTrailersAdapter);
     }
 
     private void showFakeMovieTrailers(View rootView) {
@@ -107,17 +124,28 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     @NonNull
-    private String getMovieReviewUrl(String movieId)  {
-        Uri uri = Uri.parse(getMovieReviewBaseURL(movieId));
+    private String getMovieReviewsUrl(String movieId)  {
+        Uri uri = Uri.parse(getMovieReviewsBaseURL(movieId));
         Uri.Builder builder = uri.buildUpon();
         builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
         uri = builder.build();
         return uri.toString();
     }
 
+    private String getMovieTrailersUrl(String movieId)  {
+        Uri uri = Uri.parse(getMovieTrailersBaseURL(movieId));
+        Uri.Builder builder = uri.buildUpon();
+        builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
+        uri = builder.build();
+        return uri.toString();
+    }
 
-    private String getMovieReviewBaseURL(String movieID){
+    private String getMovieReviewsBaseURL(String movieID){
         return "http://api.themoviedb.org/3/movie/" + movieID + "/reviews?";
+    }
+
+    private String getMovieTrailersBaseURL(String movieID){
+        return "http://api.themoviedb.org/3/movie/" + movieID + "/trailers?";
     }
 
     private void getMovieFromParcelableExtra() {

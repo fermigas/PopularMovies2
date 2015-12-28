@@ -15,28 +15,32 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class FetchMovieReviewsTask extends AsyncTask<Void, Void, String[]> {
 
-    private final String LOG_TAG = FetchMovieReviewsTask.class.getSimpleName();
+public class FetchMovieTrailersTask extends AsyncTask<Void, Void, String[]> {
+
+    private final String LOG_TAG = FetchMovieTrailersTask.class.getSimpleName();
 
     private final Context context;
-    private ArrayAdapter<String> movieReviewsAdapter;
+    private ArrayAdapter<String> movieTrailersAdapter;
     private String url = null;
 
-    public FetchMovieReviewsTask(Context context, String url, ArrayAdapter<String> movieReviewsAdapter) {
+    public FetchMovieTrailersTask(Context context, String url, ArrayAdapter<String> movieTrailersAdapter) {
+
         this.context = context;
-        this.movieReviewsAdapter = movieReviewsAdapter;
+        this.movieTrailersAdapter = movieTrailersAdapter;
         this.url = url;
+
     }
+
 
     @Override
     protected String[] doInBackground(Void... params) {
 
-        String movieReviewsJsonStr = null;
+        String movieTrailersJsonStr = null;
 
         try {
-            movieReviewsJsonStr = getJSONString();
-            Log.v(LOG_TAG, "Movie Review Data string: " + movieReviewsJsonStr);
+            movieTrailersJsonStr = getJSONString();
+            Log.v(LOG_TAG, "Movie Trailers Data string: " + movieTrailersJsonStr);
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error", e);
@@ -44,7 +48,7 @@ public class FetchMovieReviewsTask extends AsyncTask<Void, Void, String[]> {
         }
 
         try {
-            return getMovieReviewsDataFromJson(movieReviewsJsonStr );
+            return getMovieTrailersDataFromJson(movieTrailersJsonStr );
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
@@ -56,9 +60,9 @@ public class FetchMovieReviewsTask extends AsyncTask<Void, Void, String[]> {
     @Override
     protected void onPostExecute(String[] result) {
         if(result != null ) {
-            movieReviewsAdapter.clear();
-            for (String movieReviewStr : result) {
-                movieReviewsAdapter.add(movieReviewStr);
+            movieTrailersAdapter.clear();
+            for (String movieTrailerStr : result) {
+                movieTrailersAdapter.add(movieTrailerStr);
             }
         }
     }
@@ -77,22 +81,22 @@ public class FetchMovieReviewsTask extends AsyncTask<Void, Void, String[]> {
 
 
 
-    private String[] getMovieReviewsDataFromJson(String movieReviewsJsonStr )
+    private String[] getMovieTrailersDataFromJson(String movieTrailersJsonStr )
             throws JSONException {
 
-        final String TMBD_REVIEW_CONTENT = "content";
 
-        JSONObject movieReviewsJson = new JSONObject(movieReviewsJsonStr);
-        JSONArray movieReviewsArray = movieReviewsJson.getJSONArray("results");
+        JSONObject movieTrailersJson = new JSONObject(movieTrailersJsonStr);
+        JSONArray movieTrailersArray = movieTrailersJson.getJSONArray("youtube");
 
-        String[] movieReviews = new String[movieReviewsArray.length()];
+        String[] movieTrailers = new String[movieTrailersArray.length()];
 
-        for(int i = 0; i < movieReviewsArray.length(); i++) {
-            JSONObject movieReviewObject = movieReviewsArray.getJSONObject(i);
-            movieReviews[i] = movieReviewObject.getString(TMBD_REVIEW_CONTENT);
+        for(int i = 0; i < movieTrailersArray.length(); i++) {
+            JSONObject movieTrailerObject = movieTrailersArray.getJSONObject(i);
+            movieTrailers[i] = "https://www.youtube.com/watch?v=" + movieTrailerObject.getString("source");
         }
 
-        return movieReviews;
+        return movieTrailers;
     }
+
 
 }
