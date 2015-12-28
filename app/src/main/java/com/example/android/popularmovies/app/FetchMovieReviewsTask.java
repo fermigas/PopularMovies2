@@ -4,6 +4,8 @@ package com.example.android.popularmovies.app;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import static android.app.PendingIntent.getActivity;
@@ -24,9 +27,13 @@ public class FetchMovieReviewsTask extends AsyncTask<String, Void, String[]> {
 
     private final String LOG_TAG = FetchMovieReviewsTask.class.getSimpleName();
 
-    private ArrayAdapter<String> movieReviewsAdapter;
     private final Context context;
+    private ArrayAdapter<String> movieReviewsAdapter;
+
+
     private Uri.Builder builder;
+    private HttpURLConnection urlConnection = null;
+    private BufferedReader reader = null;
 
 
     public FetchMovieReviewsTask(Context context, ArrayAdapter<String> movieReviewsAdapter) {
@@ -39,52 +46,27 @@ public class FetchMovieReviewsTask extends AsyncTask<String, Void, String[]> {
     @Override
     protected String[] doInBackground(String... params) {
 
-
-        HttpURLConnection movieReviewsUrlConnection = null;
-        BufferedReader movieReviewsReader = null;
         String movieReviewsJsonStr = null;
 
         try {
 
-            Uri builtMovieReviewsUri = Uri.parse(getBaseURL(params[0]));
-            builder = builtMovieReviewsUri.buildUpon();
-            appendApiKey();
-
-            builtMovieReviewsUri = builder.build();
-            URL movieReviewsURL = new URL(builtMovieReviewsUri.toString());
-
-            movieReviewsUrlConnection = (HttpURLConnection) movieReviewsURL.openConnection();
-            movieReviewsUrlConnection.setRequestMethod("GET");
-            movieReviewsUrlConnection.connect();
-
-            InputStream movieReviewsInputStream = movieReviewsUrlConnection.getInputStream();
-            StringBuffer movieReviewsBuffer = new StringBuffer();
-            if (movieReviewsInputStream == null)
-                return null;
-
-            movieReviewsReader = new BufferedReader(new InputStreamReader(movieReviewsInputStream));
-            String line;
-            while ((line = movieReviewsReader.readLine()) != null)
-                movieReviewsBuffer.append(line + "\n");
-
-            if (movieReviewsBuffer.length() == 0)
-                return null;  // Don't parse of there's no data
-
-            movieReviewsJsonStr = movieReviewsBuffer.toString();
+            movieReviewsJsonStr = getJSONString(params[0]);
+            if (movieReviewsJsonStr == null) return null;
 
             Log.v(LOG_TAG, "Movie Review Data string: " + movieReviewsJsonStr);
-
 
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error", e);
             return null;
+
         } finally {
-            if (movieReviewsUrlConnection != null) {
-                movieReviewsUrlConnection.disconnect();
-            }
-            if (movieReviewsReader != null) {
+
+            if (urlConnection != null)
+                urlConnection.disconnect();
+
+            if (reader != null) {
                 try {
-                    movieReviewsReader.close();
+                    reader.close();
                 } catch (final IOException e) {
                     Log.e(LOG_TAG, "Error closing movie reviews reader stream.", e);
                 }
@@ -99,6 +81,43 @@ public class FetchMovieReviewsTask extends AsyncTask<String, Void, String[]> {
         }
 
         return null;
+    }
+
+    @Nullable
+    private String getJSONString(String param) throws IOException {
+
+        connectToUrl(getUrl(param));
+
+        InputStream stream = urlConnection.getInputStream();
+        StringBuffer buffer = new StringBuffer();
+        if (stream == null)
+            return null;
+
+        reader = new BufferedReader(new InputStreamReader(stream));
+        String line;
+        while ((line = reader.readLine()) != null)
+            buffer.append(line + "\n");
+
+        if (buffer.length() == 0)
+            return null;
+
+        return buffer.toString();
+    }
+
+    private void connectToUrl(URL url) throws IOException {
+        urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestMethod("GET");
+        urlConnection.connect();
+    }
+
+    @NonNull
+    private URL getUrl(String param) throws MalformedURLException {
+        Uri uri = Uri.parse(getBaseURL(param));
+        builder = uri.buildUpon();
+        appendApiKey();
+
+        uri = builder.build();
+        return new URL(uri.toString());
     }
 
     @Override
@@ -137,7 +156,6 @@ public class FetchMovieReviewsTask extends AsyncTask<String, Void, String[]> {
 
 
         }
-
 
         return movieReviews;
     }
