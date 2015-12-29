@@ -151,7 +151,7 @@ public class MoviesFragment extends Fragment {
         TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
         moviesTask.execute(apiParams);
 
-//        showMovies();
+        showMovies();
 
 
         currentPage += 1;
@@ -175,15 +175,15 @@ public class MoviesFragment extends Fragment {
                 Gson gson = new Gson();
                 MoviesResponse moviesResponse = gson.fromJson(responsestr, MoviesResponse.class);
                 MoviesCustomAdapter moviesCustomAdapter = new MoviesCustomAdapter(getActivity(), moviesResponse.getResults() );
-                if(moviesCustomAdapter.getCount() < 20)
-                    noMoreResults = true;
-                else
-                    noMoreResults = false;
+//                if(moviesCustomAdapter.getCount() < 20)
+//                    noMoreResults = true;
+//                else
+//                    noMoreResults = false;
                 Log.v(LOG_TAG,  "moviesCustomAdapter.getCount()=" + moviesCustomAdapter.getCount() + ", " +
                         "currentPage=" + currentPage + ", " +
                         "noMoreResults=" + noMoreResults + ", " +
                         "fetchingMore=" + fetchingMore + ", " );
-                gridView.setAdapter(moviesCustomAdapter);
+//                gridView.setAdapter(moviesCustomAdapter);
             }
 
             @Override
