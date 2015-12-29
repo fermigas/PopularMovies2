@@ -117,7 +117,10 @@ public class MoviesFragment extends Fragment {
                 if((last == totalItemCount) && !fetchingMore && !noMoreResults){
                         TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
                         new FetchMoviesTask().execute(apiParams);
-                    Log.v(LOG_TAG,  "visibleItemCount=" + visibleItemCount + ", " +
+                    Log.v(LOG_TAG,
+                            "firstVisibleItem=" + firstVisibleItem + ", " +
+                            "visibleItemCount=" + visibleItemCount + ", " +
+                            "totalItemCount=" + totalItemCount + ", " +
                             "last=" + last + ", " +
                             "currentPage=" + currentPage + ", " +
                             "noMoreResults=" + noMoreResults + ", " +
