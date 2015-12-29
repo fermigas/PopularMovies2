@@ -45,17 +45,22 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MoviesFragment extends Fragment {
 
     private ArrayList<Movie> movieArray;
     private MovieAdapter movieAdapter;
-    private int currentPage;
+
+    private int currentPage = 1;
     private Boolean fetchingMore = true;
+//    private Boolean noMoreResults = false;
+
     private GridView gridView;
-    private Boolean noMoreResults = false;
+    private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
 
 
+    private MoviesCustomAdapter moviesCustomAdapter;
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
 
     public MoviesFragment() {
@@ -65,19 +70,20 @@ public class MoviesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
+//        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
             movieArray = new ArrayList<Movie>();
-        else
-            movieArray = savedInstanceState.getParcelableArrayList("movies");
+            moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
+//        else
+//            movieArray = savedInstanceState.getParcelableArrayList("movies");
 
         setHasOptionsMenu(true);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outstate){
-        outstate.putParcelableArrayList("movies", movieArray);
-        super.onSaveInstanceState(outstate);
-    }
+//    @Override
+//    public void onSaveInstanceState(Bundle outstate){
+//        outstate.putParcelableArrayList("movies", movieArray);
+//        super.onSaveInstanceState(outstate);
+//    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -95,11 +101,15 @@ public class MoviesFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         movieAdapter =  new MovieAdapter( getActivity(), movieArray);
+        moviesCustomAdapter =  new MoviesCustomAdapter( getActivity(), moviesResultsEntity);
+
         View rootView = inflater.inflate(R.layout.movie_fragment, container, false);
-
         gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-        gridView.setAdapter(movieAdapter);
 
+        // gridView.setAdapter(movieAdapter);
+        gridView.setAdapter(moviesCustomAdapter);
+
+        // ****  TODO  fix intent & parcelable code    ***/
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -120,14 +130,17 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int last = firstVisibleItem + visibleItemCount;
-                if((last == totalItemCount) && !fetchingMore && !noMoreResults){
+                if((last == totalItemCount) && fetchingMore  /* && !noMoreResults */ ){
                     Log.v(LOG_TAG,  "last=" + last + ", " +
                         "currentPage=" + currentPage + ", " +
-                        "noMoreResults=" + noMoreResults + ", " +
+//                        "noMoreResults=" + noMoreResults + ", " +
                         "fetchingMore=" + fetchingMore + ", " );
 
-                    TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
-                        new FetchMoviesTask().execute(apiParams);
+//                    TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
+
+                    showMovies(currentPage);
+
+                    //    new FetchMoviesTask().execute(apiParams);
                         currentPage += 1;
                 }
             }
@@ -144,46 +157,52 @@ public class MoviesFragment extends Fragment {
 
     public void updateMovies() {
         currentPage = 1;  // This is only called on startup, or when prefs change
-        noMoreResults = false;  // New data set on startup and on prefs changing
-        movieAdapter.clear();
+//        noMoreResults = false;  // New data set on startup and on prefs changing
+//        movieAdapter.clear();
 
-        FetchMoviesTask moviesTask = new FetchMoviesTask();
-        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
-        moviesTask.execute(apiParams);
+//        FetchMoviesTask moviesTask = new FetchMoviesTask();
+//        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
+//        moviesTask.execute(apiParams);
 
-        showMovies();
-
+        showMovies(currentPage);
 
         currentPage += 1;
-//        fetchingMore = false;
+
+        fetchingMore = false;
 
 
 
     }
 
 
-    private void showMovies() {
+    private void showMovies(final int thisPage) {
 
-        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
+        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), thisPage);
         String url = apiParams.buildMoviesUri().toString();
 
         AsyncHttpClient client = new AsyncHttpClient();
+        fetchingMore = true;
         client.get(getActivity(), url, new AsyncHttpResponseHandler() {
+
+
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String responsestr = new String(responseBody);
                 Gson gson = new Gson();
                 MoviesResponse moviesResponse = gson.fromJson(responsestr, MoviesResponse.class);
-                MoviesCustomAdapter moviesCustomAdapter = new MoviesCustomAdapter(getActivity(), moviesResponse.getResults() );
+                moviesCustomAdapter = new MoviesCustomAdapter(getActivity(), moviesResponse.getResults() );
 //                if(moviesCustomAdapter.getCount() < 20)
 //                    noMoreResults = true;
 //                else
 //                    noMoreResults = false;
                 Log.v(LOG_TAG,  "moviesCustomAdapter.getCount()=" + moviesCustomAdapter.getCount() + ", " +
-                        "currentPage=" + currentPage + ", " +
-                        "noMoreResults=" + noMoreResults + ", " +
+                        "currentPage=" + thisPage + ", " +
+//                        "noMoreResults=" + noMoreResults + ", " +
                         "fetchingMore=" + fetchingMore + ", " );
-//                gridView.setAdapter(moviesCustomAdapter);
+                Log.v(LOG_TAG, "Movie Data string: " + moviesResponse.getResults().toString());
+
+                gridView.setAdapter(moviesCustomAdapter);
+                fetchingMore = false;
             }
 
             @Override
@@ -205,10 +224,10 @@ public class MoviesFragment extends Fragment {
             JSONObject popMoviesJson = new JSONObject(popMoviesJsonStr);
             JSONArray popMoviesArray = popMoviesJson.getJSONArray(getString(R.string.tmdb_results));
 
-            if(popMoviesArray.length() < 20)
-                noMoreResults = true;
-            else
-                noMoreResults = false;
+//            if(popMoviesArray.length() < 20)
+//                noMoreResults = true;
+//            else
+//                noMoreResults = false;
 
             Movie[] movies = new Movie[popMoviesArray.length()];
 
