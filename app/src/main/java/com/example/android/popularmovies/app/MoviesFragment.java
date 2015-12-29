@@ -29,11 +29,16 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ListView;
 
+import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +54,9 @@ public class MoviesFragment extends Fragment {
     private Boolean fetchingMore = true;
     private GridView gridView;
     private Boolean noMoreResults = false;
+
+
+    private final String LOG_TAG = MoviesFragment.class.getSimpleName();
 
     public MoviesFragment() {
     }
@@ -113,7 +121,12 @@ public class MoviesFragment extends Fragment {
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int last = firstVisibleItem + visibleItemCount;
                 if((last == totalItemCount) && !fetchingMore && !noMoreResults){
-                        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
+                    Log.v(LOG_TAG,  "last=" + last + ", " +
+                        "currentPage=" + currentPage + ", " +
+                        "noMoreResults=" + noMoreResults + ", " +
+                        "fetchingMore=" + fetchingMore + ", " );
+
+                    TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
                         new FetchMoviesTask().execute(apiParams);
                         currentPage += 1;
                 }
@@ -135,10 +148,50 @@ public class MoviesFragment extends Fragment {
         movieAdapter.clear();
 
         FetchMoviesTask moviesTask = new FetchMoviesTask();
-
         TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
         moviesTask.execute(apiParams);
+
+//        showMovies();
+
+
         currentPage += 1;
+//        fetchingMore = false;
+
+
+
+    }
+
+
+    private void showMovies() {
+
+        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
+        String url = apiParams.buildMoviesUri().toString();
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                String responsestr = new String(responseBody);
+                Gson gson = new Gson();
+                MoviesResponse moviesResponse = gson.fromJson(responsestr, MoviesResponse.class);
+                MoviesCustomAdapter moviesCustomAdapter = new MoviesCustomAdapter(getActivity(), moviesResponse.getResults() );
+                if(moviesCustomAdapter.getCount() < 20)
+                    noMoreResults = true;
+                else
+                    noMoreResults = false;
+                Log.v(LOG_TAG,  "moviesCustomAdapter.getCount()=" + moviesCustomAdapter.getCount() + ", " +
+                        "currentPage=" + currentPage + ", " +
+                        "noMoreResults=" + noMoreResults + ", " +
+                        "fetchingMore=" + fetchingMore + ", " );
+                gridView.setAdapter(moviesCustomAdapter);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+            }
+        });
+
     }
 
 
