@@ -1,125 +1,114 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="wrap_content"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    >
+    android:layout_height="wrap_content">
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:orientation="vertical"
-    tools:context=".MovieDetailsActivity"
-    >
-
-
-    <TextView
-        android:id="@+id/details_title"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/abc_text_size_large_material"
-        />
-
-    <LinearLayout
-        android:paddingTop="@dimen/activity_vertical_margin"
+        android:orientation="vertical"
         android:paddingBottom="@dimen/activity_vertical_margin"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context=".MovieDetailsActivity">
 
-        <ImageView
-            android:id="@+id/details_movie_poster"
-            android:gravity="start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            />
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="end"
+        <TextView
+            android:id="@+id/details_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            >
+            android:textSize="@dimen/abc_text_size_large_material" />
 
-            <TextView
-                android:id="@+id/details_release_date"
-                android:gravity="end"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:paddingTop="@dimen/activity_vertical_margin">
+
+            <ImageView
+                android:id="@+id/details_movie_poster"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="start" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                />
-
-            <TextView
-                android:id="@+id/details_rating"
                 android:gravity="end"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                 />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/details_release_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:gravity="end" />
+
+                <TextView
+                    android:id="@+id/details_rating"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:gravity="end" />
+            </LinearLayout>
+
+
         </LinearLayout>
-
-
-    </LinearLayout>
-
 
 
         <TextView
             android:id="@+id/details_overview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbars="vertical"
             android:nestedScrollingEnabled="true"
             android:paddingBottom="5dp"
-             />
+            android:scrollbars="vertical" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text=" Trailers"
-        android:id="@+id/textView"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:singleLine="false"
-        android:background="#efebe9"
-        android:textColor="#000000" />
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#efebe9"
+            android:paddingBottom="2dp"
+            android:paddingTop="2dp"
+            android:singleLine="false"
+            android:text=" Trailers"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#000000" />
 
-    <ListView
+        <ListView
             android:id="@+id/listview_movie_trailer"
             android:layout_width="match_parent"
-            android:nestedScrollingEnabled="true"
             android:layout_height="150dp"
             android:headerDividersEnabled="true"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp" />
+            android:nestedScrollingEnabled="true"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text=" Reviews"
-        android:id="@+id/textView2"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:singleLine="false"
-        android:background="#efebe9"
-        android:textColor="#000000" />
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#efebe9"
+            android:paddingBottom="2dp"
+            android:paddingTop="2dp"
+            android:singleLine="false"
+            android:text=" Reviews"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#000000" />
 
-    <ListView
+        <ListView
             android:id="@+id/listview_movie_review"
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:nestedScrollingEnabled="true"
-            android:scrollbars="vertical"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp" />
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:scrollbars="vertical" />
 
 
-</LinearLayout>
+    </LinearLayout>
 
 </ScrollView>

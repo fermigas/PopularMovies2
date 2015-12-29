@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,7 +19,6 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import org.apache.http.Header;
 
 // TODO Organize movie details fragment layout to support
@@ -35,14 +33,13 @@ public class MovieDetailsFragment extends Fragment {
 
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
-    ArrayAdapter<String> movieReviewsAdapter;
-    ArrayAdapter<String> movieTrailersAdapter;
     private Movie movie;
-    private AsyncHttpClient client;
-    private Gson gson;
     private MovieTrailersResponse trailersResponse;
     private MovieTrailersCustomAdapter movieTrailersCustomAdapter;
     private ListView trailersListView;
+    private ListView reviewsListView;
+    private MovieReviewsResponse reviewsResponse;
+    private MovieReviewsCustomAdapter movieReviewsCustomAdapter;
 
     public MovieDetailsFragment() {
         setHasOptionsMenu(true);
@@ -56,48 +53,24 @@ public class MovieDetailsFragment extends Fragment {
         getMovieFromParcelableExtra();
 
         showMovieData(rootView);
-        showMovieTrailersNew(rootView);
+        showMovieTrailers(rootView);
         showMovieReviews(rootView);
 
         return rootView;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        executeFetchMovieReviewsTask();
-    }
 
-
-    private void executeFetchMovieReviewsTask() {
-        String movieReviewsUrl = getMovieReviewsUrl(movie.id);
-        FetchMovieReviewsTask movieReviews = new FetchMovieReviewsTask(getActivity(), movieReviewsUrl, movieReviewsAdapter);
-        movieReviews.execute();
-    }
-
-    private void showMovieReviews(View rootView) {
-
-        movieReviewsAdapter =  new ArrayAdapter<>(
-                        getActivity(),
-                        R.layout.list_item_movie_review,
-                        R.id.list_item_movie_review_textview,
-                        new ArrayList<String>() );
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_review);
-        listView.setAdapter(movieReviewsAdapter);
-    }
-
-    private void showMovieTrailersNew(View rootView) {
-
-        trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
+    private void showMovieTrailers(View rootView) {
 
         String url = getMovieTrailersUrl(movie.id);
+        trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
 
-        client = new AsyncHttpClient();
+        AsyncHttpClient client = new AsyncHttpClient();
         client.get(getActivity(), url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String responsestr = new String(responseBody);
-                gson = new Gson();
+                Gson gson = new Gson();
                 trailersResponse = gson.fromJson(responsestr, MovieTrailersResponse.class);
                 movieTrailersCustomAdapter = new MovieTrailersCustomAdapter(getActivity(), trailersResponse.getYoutube() );
                 trailersListView.setAdapter(movieTrailersCustomAdapter);
@@ -111,16 +84,30 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
-    private void showMovieTrailers(View rootView) {
+    private void showMovieReviews(View rootView) {
 
-        movieTrailersAdapter =  new ArrayAdapter<>(
-                        getActivity(),
-                        R.layout.list_item_movie_trailer,
-                        R.id.list_item_movie_trailer_textview,
-                        new ArrayList<String>() );
-        ListView listView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
-        listView.setAdapter(movieTrailersAdapter);
+        String url = getMovieReviewsUrl(movie.id);
+        reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                String responsestr = new String(responseBody);
+                Gson gson = new Gson();
+                reviewsResponse = gson.fromJson(responsestr, MovieReviewsResponse.class);
+                movieReviewsCustomAdapter = new MovieReviewsCustomAdapter(getActivity(), reviewsResponse.getResults() );
+                reviewsListView.setAdapter(movieReviewsCustomAdapter);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+            }
+        });
+
     }
+
 
     @NonNull
     private String getMovieReviewsUrl(String movieId)  {
