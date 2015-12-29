@@ -27,7 +27,7 @@ public class TimePeriod {
             case "this_entire_week":
                 getThisWeek();
                 break;
-            case  "this__entire_month":
+            case  "this_entire_month":
                 getThisMonth();
                 break;
             case  "this_year_to_date":
@@ -175,7 +175,6 @@ public class TimePeriod {
         c.set(Calendar.DAY_OF_YEAR, 1);
         onOrAfterThisDate = toTmdbDateString(c);
 
-        return;
     }
 
     private void getThisMonth() {
@@ -232,7 +231,6 @@ public class TimePeriod {
         c.add(Calendar.DATE, 7);
         onOrBeforeThisDate = toTmdbDateString(c);
 
-        return;
     }
 
     public void getNextWeek(){
@@ -252,7 +250,6 @@ public class TimePeriod {
         c.add(Calendar.DATE, 7);
         onOrBeforeThisDate = toTmdbDateString(c);
 
-        return;
     }
 
     private String toTmdbDateString(Calendar c) {
@@ -264,18 +261,13 @@ public class TimePeriod {
     }
 
     public boolean periodHasLowerDate() {
-        if(onOrAfterThisDate == "")
-            return false;
+        return !onOrAfterThisDate.equals("");
 
-        return true;
     }
 
 
     public boolean periodHasUpperDate() {
-        if(onOrBeforeThisDate == "")
-            return false;
-
-        return true;
+        return !onOrBeforeThisDate.equals("");
 
     }
 

@@ -15,8 +15,6 @@
  */
 package com.example.android.popularmovies.app;
 
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -27,34 +25,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
 import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class MoviesFragment extends Fragment {
 
-    private ArrayList<Movie> movieArray;
-    private MovieAdapter movieAdapter;
 
     private int currentPage = 1;
     private Boolean fetchingMore = true;
-//    private Boolean noMoreResults = false;
+    private Boolean noMoreResults = false;
 
     private GridView gridView;
     private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
@@ -71,7 +57,7 @@ public class MoviesFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
 //        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
-            movieArray = new ArrayList<Movie>();
+//            movieArray = new ArrayList<Movie>();
             moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
 //        else
 //            movieArray = savedInstanceState.getParcelableArrayList("movies");
@@ -100,7 +86,7 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        movieAdapter =  new MovieAdapter( getActivity(), movieArray);
+//        movieAdapter =  new MovieAdapter( getActivity(), movieArray);
         moviesCustomAdapter =  new MoviesCustomAdapter( getActivity(), moviesResultsEntity);
 
         View rootView = inflater.inflate(R.layout.movie_fragment, container, false);
@@ -110,16 +96,16 @@ public class MoviesFragment extends Fragment {
         gridView.setAdapter(moviesCustomAdapter);
 
         // ****  TODO  fix intent & parcelable code    ***/
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Movie movie = movieAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
-                intent.putExtra("movie", movie);
-                startActivity(intent);
-            }
-        });
+//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+//                Movie movie = movieAdapter.getItem(position);
+//                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+//                intent.putExtra("movie", movie);
+//                startActivity(intent);
+//            }
+//        });
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -130,22 +116,9 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int last = firstVisibleItem + visibleItemCount;
-                if((last == totalItemCount) && !fetchingMore  /* && !noMoreResults */ ){
-                    Log.v(LOG_TAG,
-                         "firstVisibleItem=" + firstVisibleItem + ", " +
-                         "visibleItemCount=" + visibleItemCount + ", " +
-                         "totalItemCount=" + totalItemCount + ", " +
-                         "last=" + last + ", " +
-                        "currentPage=" + currentPage + ", " +
-//                        "noMoreResults=" + noMoreResults + ", " +
-                        "fetchingMore=" + fetchingMore + ", " );
-
-//                    TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
-
+                if((last == totalItemCount) && !fetchingMore   && !noMoreResults  ){
                     showMovies(currentPage);
-
-                    //    new FetchMoviesTask().execute(apiParams);
-                        currentPage += 1;
+                    currentPage += 1;
                 }
             }
         });
@@ -161,20 +134,12 @@ public class MoviesFragment extends Fragment {
 
     public void updateMovies() {
         currentPage = 1;  // This is only called on startup, or when prefs change
-//        noMoreResults = false;  // New data set on startup and on prefs changing
-//        movieAdapter.clear();
-
-//        FetchMoviesTask moviesTask = new FetchMoviesTask();
-//        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
-//        moviesTask.execute(apiParams);
+        noMoreResults = false;  // New data set on startup and on prefs changing
+        moviesCustomAdapter.clear();
 
         showMovies(currentPage);
 
         currentPage += 1;
-
-        fetchingMore = false;
-
-
 
     }
 
@@ -194,19 +159,18 @@ public class MoviesFragment extends Fragment {
                 String responsestr = new String(responseBody);
                 Gson gson = new Gson();
                 MoviesResponse moviesResponse = gson.fromJson(responsestr, MoviesResponse.class);
-                moviesCustomAdapter = new MoviesCustomAdapter(getActivity(), moviesResponse.getResults() );
-//                if(moviesCustomAdapter.getCount() < 20)
-//                    noMoreResults = true;
-//                else
-//                    noMoreResults = false;
-                Log.v(LOG_TAG,  "moviesCustomAdapter.getCount()=" + moviesCustomAdapter.getCount() + ", " +
-                        "currentPage=" + thisPage + ", " +
-//                        "noMoreResults=" + noMoreResults + ", " +
-                        "fetchingMore=" + fetchingMore + ", " );
+                if(!moviesResponse.getResults().isEmpty()) {
+                    for (MoviesResponse.ResultsEntity  result : moviesResponse.getResults() )
+                        moviesCustomAdapter.add(result);
+                    fetchingMore = false;
+                }
+
+                if(moviesCustomAdapter.getCount() < 20)
+                    noMoreResults = true;
+                else
+                    noMoreResults = false;
                 Log.v(LOG_TAG, "Movie Data string: " + moviesResponse.getResults().toString());
 
-                gridView.setAdapter(moviesCustomAdapter);
-                fetchingMore = false;
             }
 
             @Override
@@ -217,98 +181,5 @@ public class MoviesFragment extends Fragment {
 
     }
 
-
-    public class FetchMoviesTask extends AsyncTask<TmdbApiParameters, Void, Movie[]> {
-
-        private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
-
-        private Movie[] getMovieDataFromJson(String popMoviesJsonStr )
-                throws JSONException {
-
-            JSONObject popMoviesJson = new JSONObject(popMoviesJsonStr);
-            JSONArray popMoviesArray = popMoviesJson.getJSONArray(getString(R.string.tmdb_results));
-
-//            if(popMoviesArray.length() < 20)
-//                noMoreResults = true;
-//            else
-//                noMoreResults = false;
-
-            Movie[] movies = new Movie[popMoviesArray.length()];
-
-            for(int i = 0; i < popMoviesArray.length(); i++) {
-                JSONObject movieObject = popMoviesArray.getJSONObject(i);
-                JSONArray  genreIDs = movieObject.getJSONArray(getString(R.string.tmdb_genre_ids));
-                int[] idList = new int[genreIDs.length()];
-                for (int j = 0; j < genreIDs.length(); j++) {
-                    idList[j] = genreIDs.getInt(j);
-                }
-                movies[i] = new Movie(
-                        idList,
-                        movieObject.getString(getString(R.string.tmdb_adult)),
-                        movieObject.getString(getString(R.string.tmdb_original_language)),
-                        movieObject.getString(getString(R.string.tmdb_poster_path)),
-                        movieObject.getString(getString(R.string.tmdb_overview)),
-                        movieObject.getString(getString(R.string.tmdb_release_date)),
-                        movieObject.getString(getString(R.string.tmdb_id)),
-                        movieObject.getString(getString(R.string.tmdb_title)),
-                        movieObject.getString(getString(R.string.tmdb_video)),
-                        movieObject.getInt(getString(R.string.tmdb_vote_count)),
-                        movieObject.getDouble(getString(R.string.tmdb_vote_average))
-
-                );
-            }
-
-
-            return movies;
-        }
-
-
-        @Override
-        protected Movie[] doInBackground(TmdbApiParameters... params) {
-
-            String popMoviesJsonStr = null;
-            fetchingMore = true;
-
-            try {
-                popMoviesJsonStr = getJSONString(params[0].buildMoviesUri().toString());
-                Log.v(LOG_TAG, "Movie Data string: " + popMoviesJsonStr);
-
-            } catch (IOException e) {
-                Log.e(LOG_TAG, getString(R.string.log_error), e);
-                return null;
-            }
-
-            try {
-                return getMovieDataFromJson(popMoviesJsonStr );
-
-            } catch (JSONException e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        private String getJSONString (String url) throws IOException {
-
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-
-            Response response = client.newCall(request).execute();
-            return response.body().string();
-        }
-
-        @Override
-        protected void onPostExecute(Movie[] result) {
-            if (result != null) {
-                for(Movie movieStr : result) {
-                    movieAdapter.add(movieStr);
-                }
-                fetchingMore = false;
-            }
-        }
-    }
 
 }

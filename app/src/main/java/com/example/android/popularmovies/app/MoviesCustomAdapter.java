@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -14,13 +15,16 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class MoviesCustomAdapter extends BaseAdapter {
+public class MoviesCustomAdapter extends ArrayAdapter<MoviesResponse.ResultsEntity> {
 
     private List<MoviesResponse.ResultsEntity> mMovieItem;
     private Context mContext;
     private LayoutInflater inflater;
 
     public MoviesCustomAdapter(Context mContext, List<MoviesResponse.ResultsEntity> mMovieItem) {
+
+        super(mContext, 0, mMovieItem);
+
         this.mContext = mContext;
         this.mMovieItem = mMovieItem;
     }
@@ -28,11 +32,6 @@ public class MoviesCustomAdapter extends BaseAdapter {
     @Override
     public int getCount() {
         return mMovieItem.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return mMovieItem.get(position);
     }
 
     @Override
@@ -44,7 +43,6 @@ public class MoviesCustomAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         ImageView imageView;
-        // Movie movie = getItem(position);
 
         if (convertView == null) {
             imageView  = new ImageView(mContext);
