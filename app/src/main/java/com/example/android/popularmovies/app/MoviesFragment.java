@@ -130,8 +130,12 @@ public class MoviesFragment extends Fragment {
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
                 int last = firstVisibleItem + visibleItemCount;
-                if((last == totalItemCount) && fetchingMore  /* && !noMoreResults */ ){
-                    Log.v(LOG_TAG,  "last=" + last + ", " +
+                if((last == totalItemCount) && !fetchingMore  /* && !noMoreResults */ ){
+                    Log.v(LOG_TAG,
+                         "firstVisibleItem=" + firstVisibleItem + ", " +
+                         "visibleItemCount=" + visibleItemCount + ", " +
+                         "totalItemCount=" + totalItemCount + ", " +
+                         "last=" + last + ", " +
                         "currentPage=" + currentPage + ", " +
 //                        "noMoreResults=" + noMoreResults + ", " +
                         "fetchingMore=" + fetchingMore + ", " );
