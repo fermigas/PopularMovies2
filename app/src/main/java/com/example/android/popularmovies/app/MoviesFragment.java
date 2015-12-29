@@ -43,6 +43,8 @@ import java.util.ArrayList;
 
 public class MoviesFragment extends Fragment {
 
+    private final String LOG_TAG = MoviesFragment.class.getSimpleName();
+
     private ArrayList<Movie> movieArray;
     private MovieAdapter movieAdapter;
     private int currentPage;
@@ -115,7 +117,13 @@ public class MoviesFragment extends Fragment {
                 if((last == totalItemCount) && !fetchingMore && !noMoreResults){
                         TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), currentPage);
                         new FetchMoviesTask().execute(apiParams);
-                        currentPage += 1;
+                    Log.v(LOG_TAG,  "visibleItemCount=" + visibleItemCount + ", " +
+                            "last=" + last + ", " +
+                            "currentPage=" + currentPage + ", " +
+                            "noMoreResults=" + noMoreResults + ", " +
+                            "fetchingMore=" + fetchingMore + ", " );
+
+                    currentPage += 1;
                 }
             }
         });
