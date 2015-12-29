@@ -1,6 +1,10 @@
 package com.example.android.popularmovies.app;
 
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class MoviesResponse {
@@ -10,41 +14,7 @@ public class MoviesResponse {
     private int total_results;
     private int total_pages;
 
-    private List<ResultsEntity> results;
-
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    public void setTotal_results(int total_results) {
-        this.total_results = total_results;
-    }
-
-    public void setTotal_pages(int total_pages) {
-        this.total_pages = total_pages;
-    }
-
-    public void setResults(List<ResultsEntity> results) {
-        this.results = results;
-    }
-
-    public int getPage() {
-        return page;
-    }
-
-    public int getTotal_results() {
-        return total_results;
-    }
-
-    public int getTotal_pages() {
-        return total_pages;
-    }
-
-    public List<ResultsEntity> getResults() {
-        return results;
-    }
-
-    public static class ResultsEntity {
+    public static class ResultsEntity implements Parcelable {
         private String poster_path;
         private boolean adult;
         private String overview;
@@ -58,7 +28,82 @@ public class MoviesResponse {
         private int vote_count;
         private boolean video;
         private double vote_average;
-        private List<Integer> genre_ids;
+        private ArrayList<Integer> genre_ids;
+
+
+        public ResultsEntity(boolean adult, String backdrop_path, ArrayList<Integer> genre_ids, int id, String original_language, String original_title, String overview, double popularity, String poster_path, String release_date, String title, boolean video, double vote_average, int vote_count) {
+            this.adult = adult;
+            this.backdrop_path = backdrop_path;
+            this.genre_ids = genre_ids;
+            this.id = id;
+            this.original_language = original_language;
+            this.original_title = original_title;
+            this.overview = overview;
+            this.popularity = popularity;
+            this.poster_path = poster_path;
+            this.release_date = release_date;
+            this.title = title;
+            this.video = video;
+            this.vote_average = vote_average;
+            this.vote_count = vote_count;
+        }
+
+        private ResultsEntity(Parcel in){
+            poster_path = in.readString();
+            adult = in.readByte() != 0;
+            overview = in.readString();
+            release_date = in.readString();
+            id = in.readInt();
+            original_title = in.readString();
+            original_language = in.readString();
+            title = in.readString();
+            backdrop_path = in.readString();
+            video = in.readByte() != 0;
+            popularity = in.readDouble();
+            vote_count = in.readInt();
+            vote_average = in.readDouble();
+            genre_ids = (ArrayList<Integer>) in.readSerializable();
+
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(poster_path);
+            dest.writeByte((byte) (adult ? 1 : 0));
+            dest.writeString(overview);
+            dest.writeString(release_date);
+            dest.writeInt(id);
+            dest.writeString(original_title);
+            dest.writeString(original_language);
+            dest.writeString(title);
+            dest.writeString(backdrop_path);
+            dest.writeDouble(popularity);
+            dest.writeInt(vote_count);
+            dest.writeByte((byte)(video ? 1 : 0));
+            dest.writeDouble(vote_average);
+            dest.writeSerializable(genre_ids);
+
+
+        }
+
+
+        public static final Parcelable.Creator<ResultsEntity> CREATOR= new Parcelable.Creator<ResultsEntity>() {
+
+            @Override
+            public ResultsEntity createFromParcel(Parcel source) {
+                return new ResultsEntity(source);  //using parcelable constructor
+            }
+
+            @Override
+            public ResultsEntity[] newArray(int size) {
+                return new ResultsEntity[size];
+            }
+        };
 
         public void setPoster_path(String poster_path) {
             this.poster_path = poster_path;
@@ -112,7 +157,7 @@ public class MoviesResponse {
             this.vote_average = vote_average;
         }
 
-        public void setGenre_ids(List<Integer> genre_ids) {
+        public void setGenre_ids(ArrayList<Integer> genre_ids) {
             this.genre_ids = genre_ids;
         }
 
@@ -171,5 +216,39 @@ public class MoviesResponse {
         public List<Integer> getGenre_ids() {
             return genre_ids;
         }
+    }
+
+    private List<ResultsEntity> results;
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public void setTotal_results(int total_results) {
+        this.total_results = total_results;
+    }
+
+    public void setTotal_pages(int total_pages) {
+        this.total_pages = total_pages;
+    }
+
+    public void setResults(List<ResultsEntity> results) {
+        this.results = results;
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public int getTotal_results() {
+        return total_results;
+    }
+
+    public int getTotal_pages() {
+        return total_pages;
+    }
+
+    public List<ResultsEntity> getResults() {
+        return results;
     }
 }
