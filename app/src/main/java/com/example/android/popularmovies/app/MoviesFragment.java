@@ -15,6 +15,7 @@
  */
 package com.example.android.popularmovies.app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -25,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.google.gson.Gson;
@@ -37,17 +39,15 @@ import java.util.ArrayList;
 
 public class MoviesFragment extends Fragment {
 
+    private final String LOG_TAG = MoviesFragment.class.getSimpleName();
 
     private int currentPage = 1;
     private Boolean fetchingMore = true;
-    private Boolean noMoreResults = false;
 
+    private Boolean noMoreResults = false;
     private GridView gridView;
     private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
-
-
     private MoviesCustomAdapter moviesCustomAdapter;
-    private final String LOG_TAG = MoviesFragment.class.getSimpleName();
 
     public MoviesFragment() {
     }
@@ -56,20 +56,19 @@ public class MoviesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
-//            movieArray = new ArrayList<Movie>();
+        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
             moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
-//        else
-//            movieArray = savedInstanceState.getParcelableArrayList("movies");
+        else
+            moviesResultsEntity = savedInstanceState.getParcelableArrayList("movies");
 
         setHasOptionsMenu(true);
     }
 
-//    @Override
-//    public void onSaveInstanceState(Bundle outstate){
-//        outstate.putParcelableArrayList("movies", movieArray);
-//        super.onSaveInstanceState(outstate);
-//    }
+    @Override
+    public void onSaveInstanceState(Bundle outstate){
+        outstate.putParcelableArrayList("movies", moviesResultsEntity);
+        super.onSaveInstanceState(outstate);
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -86,31 +85,25 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-//        movieAdapter =  new MovieAdapter( getActivity(), movieArray);
         moviesCustomAdapter =  new MoviesCustomAdapter( getActivity(), moviesResultsEntity);
 
         View rootView = inflater.inflate(R.layout.movie_fragment, container, false);
         gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-
-        // gridView.setAdapter(movieAdapter);
         gridView.setAdapter(moviesCustomAdapter);
 
-        // ****  TODO  fix intent & parcelable code    ***/
-//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//
-//            @Override
-//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-//                Movie movie = movieAdapter.getItem(position);
-//                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
-//                intent.putExtra("movie", movie);
-//                startActivity(intent);
-//            }
-//        });
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                MoviesResponse.ResultsEntity movie = moviesCustomAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+                intent.putExtra("movie", movie);
+                startActivity(intent);
+            }
+        });
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
-
             }
 
             @Override
