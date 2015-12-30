@@ -46,7 +46,7 @@ public class MovieTrailersCustomAdapter extends BaseAdapter {
                 (MovieTrailersResponse.YoutubeEntity) getItem(position);
 
         TextView trailer = (TextView) rowView.findViewById(R.id.list_item_movie_trailer_textview);
-        trailer.setText(item.getSource());
+        trailer.setText("https://www.youtube.com/watch?v=" + item.getSource());
 
         return rowView;
     }
