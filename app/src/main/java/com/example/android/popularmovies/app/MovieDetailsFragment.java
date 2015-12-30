@@ -33,7 +33,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
-    private Movie movie;
+    private MoviesResponse.ResultsEntity movie;
     private MovieTrailersResponse trailersResponse;
     private MovieTrailersCustomAdapter movieTrailersCustomAdapter;
     private ListView trailersListView;
@@ -62,7 +62,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieTrailers(View rootView) {
 
-        String url = getMovieTrailersUrl(movie.id);
+        String url = getMovieTrailersUrl(Integer.toString(movie.getId()) );
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -86,7 +86,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieReviews(View rootView) {
 
-        String url = getMovieReviewsUrl(movie.id);
+        String url = getMovieReviewsUrl(Integer.toString(movie.getId()));
         reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
 
         AsyncHttpClient client = new AsyncHttpClient();
@@ -161,29 +161,29 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieVoteAverage(View rootView) {
         ((TextView) rootView.findViewById(R.id.details_rating))
-                .setText(getString(R.string.movie_details_vote_average) + movie.voteAverage + "/10");
+                .setText(getString(R.string.movie_details_vote_average) + movie.getVote_average() + "/10");
     }
 
     private void showMovieReleaseDate(View rootView) {
         ((TextView) rootView.findViewById(R.id.details_release_date))
-                .setText(getString(R.string.movie_details_release_date) + movie.releaseDate);
+                .setText(getString(R.string.movie_details_release_date) + movie.getRelease_date());
     }
 
     private void showScrollingMovieOverview(View rootView) {
         TextView tv = ((TextView) rootView.findViewById(R.id.details_overview));
  //       tv.setMovementMethod(new ScrollingMovementMethod());
-        tv.setText(movie.overview);
+        tv.setText(movie.getOverview());
     }
 
     private void showMovieTitle(View rootView) {
-        ((TextView) rootView.findViewById(R.id.details_title)).setText(movie.title);
+        ((TextView) rootView.findViewById(R.id.details_title)).setText(movie.getTitle());
     }
 
     private void showMoviePoster(View rootView) {
         String fullPosterPath =
                 getContext().getString(R.string.tmdb_base_image_url) +
                         getContext().getString(R.string.tmdb_image_size_342) +
-                        movie.posterPath;
+                        movie.getPoster_path();
         ImageView imageView = (ImageView) rootView.findViewById(R.id.details_movie_poster);
         Picasso.with(getContext()).load(fullPosterPath).into(imageView);
     }

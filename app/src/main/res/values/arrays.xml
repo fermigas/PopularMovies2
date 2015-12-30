@@ -71,7 +71,7 @@
         <item>@string/pref_period_value_all</item>
         <item>@string/pref_period_value_this_entire_week</item>
         <item>@string/pref_period_value_this_entire_month</item>
-        <item>@string/pref_period_value_this_year</item>
+        <item>@string/pref_period_value_this_year_to_date</item>
         <item>@string/pref_period_value_2010s</item>
         <item>@string/pref_period_value_2000s</item>
         <item>@string/pref_period_value_1990a</item>

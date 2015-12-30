@@ -114,9 +114,9 @@
  <string name="pref_period_label_all_future">All Future Releases</string>
 
  <string name="pref_period_value_all">all</string>
- <string name="pref_period_value_this_entire_week">this_week</string>
- <string name="pref_period_value_this_entire_month">this_month</string>
- <string name="pref_period_value_this_year">this_year_to_date</string>
+ <string name="pref_period_value_this_entire_week">this_entire_week</string>
+ <string name="pref_period_value_this_entire_month">this_entire_month</string>
+ <string name="pref_period_value_this_year_to_date">this_year_to_date</string>
  <string name="pref_period_value_2010s">2010</string>
  <string name="pref_period_value_2000s">2000</string>
  <string name="pref_period_value_1990a">1990</string>
