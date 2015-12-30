@@ -15,13 +15,13 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class MoviesCustomAdapter extends ArrayAdapter<MoviesResponse.ResultsEntity> {
+public class MoviesAdapter extends ArrayAdapter<MoviesResponse.ResultsEntity> {
 
     private List<MoviesResponse.ResultsEntity> mMovieItem;
     private Context mContext;
     private LayoutInflater inflater;
 
-    public MoviesCustomAdapter(Context mContext, List<MoviesResponse.ResultsEntity> mMovieItem) {
+    public MoviesAdapter(Context mContext, List<MoviesResponse.ResultsEntity> mMovieItem) {
 
         super(mContext, 0, mMovieItem);
 

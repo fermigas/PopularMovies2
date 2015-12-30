@@ -17,6 +17,7 @@ package com.example.android.popularmovies.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,12 +43,11 @@ public class MoviesFragment extends Fragment {
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
 
     private int currentPage = 1;
-    private Boolean fetchingMore = true;
+    private Boolean currentlyFetchingMovies = true;
 
-    private Boolean noMoreResults = false;
-    private GridView gridView;
+    private Boolean morePagesOfMoviesLeftToGet = true;
     private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
-    private MoviesCustomAdapter moviesCustomAdapter;
+    private MoviesAdapter moviesAdapter;
 
     public MoviesFragment() {
     }
@@ -85,22 +85,50 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        moviesCustomAdapter =  new MoviesCustomAdapter( getActivity(), moviesResultsEntity);
-
         View rootView = inflater.inflate(R.layout.movie_fragment, container, false);
-        gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-        gridView.setAdapter(moviesCustomAdapter);
 
+        GridView gridView = attachMoviesAdapterToGridView(rootView);
+        setMovieItemClickListener(gridView);
+        setUpMovieGridviewEndlessScrolling(gridView);
+
+        return rootView;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        getFirstPageOfMovies();
+    }
+
+
+    public void getFirstPageOfMovies() {
+        morePagesOfMoviesLeftToGet = true;  // New data set on startup and on prefs changing
+        moviesAdapter.clear();  // Must do this when prefs change
+
+        currentPage = 1;        // This is only called on startup, or when prefs change
+        fetchMovies(currentPage);
+        currentPage += 1;
+
+    }
+
+    @NonNull
+    private GridView attachMoviesAdapterToGridView(View rootView) {
+        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
+        gridView.setAdapter(moviesAdapter);
+        return gridView;
+    }
+
+    private void setMovieItemClickListener(GridView gridView) {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                MoviesResponse.ResultsEntity movie = moviesCustomAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
-                intent.putExtra("movie", movie);
-                startActivity(intent);
+                startMovieDetailsActivity(position);
             }
         });
+    }
 
+    private void setUpMovieGridviewEndlessScrolling(GridView gridView) {
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -108,70 +136,82 @@ public class MoviesFragment extends Fragment {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                int last = firstVisibleItem + visibleItemCount;
-                if((last == totalItemCount) && !fetchingMore   && !noMoreResults  ){
-                    showMovies(currentPage);
-                    currentPage += 1;
-                }
+                getAnotherPageOfMoviesIfNeeded(firstVisibleItem, visibleItemCount, totalItemCount);
             }
         });
-        return rootView;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateMovies();
+    private void getAnotherPageOfMoviesIfNeeded(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+        if(shouldWeFetchMoreMovies(firstVisibleItem, visibleItemCount, totalItemCount)){
+            fetchMovies(currentPage);
+            currentPage += 1;
+        }
+    }
+
+    private void startMovieDetailsActivity(int position) {
+        MoviesResponse.ResultsEntity movie = moviesAdapter.getItem(position);
+        Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
+        intent.putExtra("movie", movie);
+        startActivity(intent);
+    }
+
+    private boolean shouldWeFetchMoreMovies(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+        int last = firstVisibleItem + visibleItemCount;
+
+//        Log.v(LOG_TAG,
+//                "firstVisibleItem: " + firstVisibleItem + ",  " +
+//                "visibleItemCount: " + visibleItemCount + ",  " +
+//                "totalItemCount: " + totalItemCount + ",  " +
+//                "last: " + last + ",  "
+//                );
+//
+
+        return (last == totalItemCount) &&   // We've scrolled past the end of the grid view
+                !currentlyFetchingMovies &&        // We're not trying to grab movies already with
+                                                   // another HTTPAsync client
+                morePagesOfMoviesLeftToGet;  // We're not out of pages of movies yet
+
     }
 
 
-    public void updateMovies() {
-        currentPage = 1;  // This is only called on startup, or when prefs change
-        noMoreResults = false;  // New data set on startup and on prefs changing
-        moviesCustomAdapter.clear();
+    private void fetchMovies(final int page) {
 
-        showMovies(currentPage);
-
-        currentPage += 1;
-
-    }
-
-
-    private void showMovies(final int thisPage) {
-
-        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), thisPage);
+        TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), page);
         String url = apiParams.buildMoviesUri().toString();
 
-        AsyncHttpClient client = new AsyncHttpClient();
-        fetchingMore = true;
-        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
+        currentlyFetchingMovies = true;
 
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                String responsestr = new String(responseBody);
-                Gson gson = new Gson();
-                MoviesResponse moviesResponse = gson.fromJson(responsestr, MoviesResponse.class);
-                if(!moviesResponse.getResults().isEmpty()) {
-                    for (MoviesResponse.ResultsEntity  result : moviesResponse.getResults() )
-                        moviesCustomAdapter.add(result);
-                    fetchingMore = false;
-                }
-
-                if(moviesCustomAdapter.getCount() < 20)
-                    noMoreResults = true;
-                else
-                    noMoreResults = false;
-                Log.v(LOG_TAG, "Movie Data string: " + moviesResponse.getResults().toString());
-
+                addMoviesToAdapter(getMoviesResponse(responseBody));
+                // Don't allow more grid view scrolling when we're out of results
+                morePagesOfMoviesLeftToGet = moviesAdapter.getCount() >= 20;
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
             }
         });
 
+    }
+
+    private void addMoviesToAdapter(MoviesResponse moviesResponse) {
+        if(!moviesResponse.getResults().isEmpty()) {
+            for (MoviesResponse.ResultsEntity  result : moviesResponse.getResults() )
+                moviesAdapter.add(result);
+            currentlyFetchingMovies = false;  // This Async process is done, we can get more now if needed
+        }
+    }
+
+    private MoviesResponse getMoviesResponse(byte[] responseBody) {
+        String responsestr = new String(responseBody);
+        Gson gson = new Gson();
+        return gson.fromJson(responsestr, MoviesResponse.class);
     }
 
 
