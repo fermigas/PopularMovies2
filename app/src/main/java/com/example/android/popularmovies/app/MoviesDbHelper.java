@@ -1,18 +1,4 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 package com.example.android.popularmovies.app;
 
 import android.content.Context;
@@ -25,7 +11,7 @@ import com.example.android.popularmovies.app.MoviesContract.ReviewEntry;
 
 public class MoviesDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     static final String DATABASE_NAME = "movie.db";
 
@@ -46,7 +32,7 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_ADULT + " INTEGER, " +
                 MovieEntry.COLUMN_OVERVIEW + " TEXT, " +
                 MovieEntry.COLUMN_RELEASE_DATE + " TEXT, " +
-                MovieEntry.COLUMN_MOVIE_ID + " INTEGER, " +
+                MovieEntry.COLUMN_MOVIE_ID + " INTEGER UNIQUE NOT NULL, " +
                 MovieEntry.COLUMN_ORIGINAL_TITLE + " TEXT, " +
                 MovieEntry.COLUMN_ORIGINAL_LANGUAGE + " TEXT, " +
                 MovieEntry.COLUMN_TITLE + " TEXT, " +
@@ -109,6 +95,8 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
 
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TrailerEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
