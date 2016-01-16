@@ -15,11 +15,11 @@
  */
 package com.example.android.popularmovies.app;
 
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.CursorAdapter;
 import android.widget.GridView;
 
 import com.example.android.popularmovies.app.MoviesContract.MovieEntry;
@@ -60,6 +59,8 @@ public class MoviesFragment extends Fragment {
 
     private MoviesCursorAdapter moviesCursorAdapter;
     SharedPreferences prefs;
+    private View rootView;
+    private Cursor mCursor;
 
     public MoviesFragment() {
     }
@@ -67,6 +68,8 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.v(LOG_TAG, "*** Entering OnCreate()");
 
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
             moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
@@ -98,17 +101,23 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        Log.v(LOG_TAG, "*** Entering OnCreateView()");
+
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        View rootView = inflater.inflate(R.layout.movie_fragment, container, false);
+        rootView = inflater.inflate(R.layout.movie_fragment, container, false);
 
+        // TODO  MAke Sure these don't fail when there's no data nd no network
+        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
+        moviesCursorAdapter = new MoviesCursorAdapter(getActivity(),
+                getCursorWithCurrentPreferences(), 0);
+
+        //   Then, attach whichever one the prefs designate
         String dataSource = getDataSource();
         if(dataSource.equals("network")) {
-            GridView gridView = attachMoviesAdapterToGridView(rootView);
-            setMovieItemClickListener(gridView);
-            setUpMovieGridviewEndlessScrolling(gridView);
+            attachMoviesAdapterToGridView();
         } else {
-            GridView gridView = attachMoviesCursorAdapterToGridView(rootView);
+            attachMoviesCursorAdapterToGridView();
         }
 
         return rootView;
@@ -117,8 +126,19 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if(getDataSource().equals("network"))
+
+        Log.v(LOG_TAG, "*** Entering OnStart()");
+
+
+        // TODO  - Switch which adapter the gridview is attached to when prefs change
+        if(getDataSource().equals("network")) {
             getFirstPageOfMovies();
+            attachMoviesAdapterToGridView();
+        }
+        else {  //
+            moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
+            attachMoviesCursorAdapterToGridView();
+        }
     }
 
 
@@ -132,35 +152,42 @@ public class MoviesFragment extends Fragment {
 
     }
 
-    @NonNull
-    private GridView attachMoviesAdapterToGridView(View rootView) {
+    private void attachMoviesAdapterToGridView() {
         GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
         gridView.setAdapter(moviesAdapter);
-        return gridView;
+        setMovieItemClickListener(gridView);
+        setUpMovieGridviewEndlessScrolling(gridView);
     }
 
-    private GridView attachMoviesCursorAdapterToGridView(View rootView) {
+    private void attachMoviesCursorAdapterToGridView() {
+        // TODO Get Click Listener Working
+        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+        gridView.setAdapter(moviesCursorAdapter);
+    }
 
-        /* Form Uri from current prefs */
+    private Cursor getCursorWithCurrentPreferences() {
+
         Uri uri = getUriFromPreferences();
 
-        /* Get cursor from Uri   */
-        Cursor cursor = getActivity().getContentResolver().query(
+        // TODO:  close cursor
+        if(mCursor != null && !mCursor.isClosed() )
+            mCursor.close();
+
+        mCursor = getActivity().getContentResolver().query(
                 uri,
                 null, null, null, null );
 
-        /* Create new MovieCursorAdapter, passing it the cursor */
-        moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor, 0);
-        /* Attach  the gridview to the  new MovieCursorAdapter */
+        String cursorContents = DatabaseUtils.dumpCursorToString(mCursor);
+        Log.v(LOG_TAG, cursorContents);
 
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
-        gridView.setAdapter(moviesCursorAdapter);
-        return gridView;
+
+        return mCursor;
+
     }
 
     private Uri getUriFromPreferences() {
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         String[] keys = {"data_source", "vote_count", "time_period", "genre_ids", "sort_order"};
 
@@ -168,18 +195,13 @@ public class MoviesFragment extends Fragment {
         String voteCount = prefs.getString(getActivity().getString(R.string.pref_vote_count_key), "0");
         String timePeriods = prefs.getString(getActivity().getString(R.string.pref_period_key), "all");
         String genreIds = getGenresAsCommaSeparatedNumbers();
-                // prefs.getString(getActivity().getString(R.string.pref_genre_ids_key), "");
         String sortOrder = prefs.getString(getActivity().getString(R.string.pref_sort_order_key), "none");
 
-        String[] values = {
-             dataSource, voteCount, timePeriods, genreIds, sortOrder
-        };
+        String[] values = {  dataSource, voteCount, timePeriods, genreIds, sortOrder };
 
 
         Uri uri = MoviesContract.MovieEntry.buildMoviesUriWithQueryParameters(
-                MovieEntry.CONTENT_URI,
-                keys,
-                values
+                MovieEntry.CONTENT_URI, keys, values
         );
 
         return uri;
@@ -340,7 +362,6 @@ public class MoviesFragment extends Fragment {
         );
 
 
-        return;
     }
 
 }

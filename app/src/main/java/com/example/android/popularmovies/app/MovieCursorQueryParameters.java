@@ -2,6 +2,7 @@ package com.example.android.popularmovies.app;
 
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,8 +22,12 @@ public class MovieCursorQueryParameters {
         this.mUri = mUri;
     }
 
+    public static final String LOG_TAG = MovieCursorQueryParameters.class.getSimpleName();
 
     public String getSelection(){
+
+        Log.v(LOG_TAG, "*** getSelection URI: "  + mUri.toString());
+
 
         StringBuilder selection = new StringBuilder();
 
@@ -34,35 +39,67 @@ public class MovieCursorQueryParameters {
 
         String timePeriods = getTimePeriodSelectionString();
         if ( timePeriods != null)
-            selection.insert(0, timePeriods + " AND ");
+            selection.insert(0, timePeriods + appendAndIfNeeded(selection) );
 
         String voteCount = getVoteCountSelectionString();
         if ( voteCount != null)
-            selection.insert(0, voteCount + " AND ");
+            selection.insert(0, voteCount + appendAndIfNeeded(selection));
 
         String dataSource = getDataSourceSelectionString();
         if ( dataSource != null)
-            selection.insert(0, dataSource + " AND ");
+            selection.insert(0, dataSource + appendAndIfNeeded(selection));
 
+        Log.v(LOG_TAG, "*** getSelection string: " + selection.toString());
+
+        if(selection.toString() == "")
+            return null;  // Makes sure the cursor has a "no args" case
 
         return selection.toString();
+    }
+
+    private String appendAndIfNeeded(StringBuilder selection) {
+        if(selection != null && selection.length() > 0)
+            return " AND ";
+        else
+            return "";
+
     }
 
 
     public String[] getSelectionArgs (){
 
         List<String> selectionArgsList = new ArrayList<String>();
-        selectionArgsList.add(getDataSourceSelectionStringArgs());
-        selectionArgsList.add(getVoteCountSelectionArg());
 
-        List<String> periods = Arrays.asList(getTimePeriodSelectionArgs());
-        selectionArgsList.addAll(periods);
+        String dataSource = getDataSourceSelectionStringArgs();
+        if(dataSource != null)
+            selectionArgsList.add(dataSource);
 
-        List<String> genres = Arrays.asList(getGenreIdsSelectionArgs());
-        selectionArgsList.addAll(genres);
+        String voteCount = getVoteCountSelectionArg();
+        if(voteCount != null)
+            selectionArgsList.add(voteCount);
 
-        String[] selectionArgs = new String[selectionArgsList.size()];
-        selectionArgs = selectionArgsList.toArray(selectionArgs);
+        String[] timePeriods = getTimePeriodSelectionArgs();
+        if(timePeriods != null) {
+            List<String> periods = Arrays.asList(timePeriods);
+            selectionArgsList.addAll(periods);
+        }
+
+        String[] genreIds = getGenreIdsSelectionArgs();
+        if(genreIds != null) {
+            List<String> genres = Arrays.asList(genreIds);
+            selectionArgsList.addAll(genres);
+        }
+
+        String[] selectionArgs;
+        if(selectionArgsList.size() > 0) {
+            selectionArgs = new String[selectionArgsList.size()];
+            selectionArgs = selectionArgsList.toArray(selectionArgs);
+        }
+        else
+            selectionArgs = null;  // Makes sure the cursor has a "no args" case
+
+
+        Log.v(LOG_TAG, "*** getSelectionArgs : "  + selectionArgsList.toString());
 
         return selectionArgs;
     }
@@ -118,7 +155,7 @@ public class MovieCursorQueryParameters {
     @Nullable
     public static String getVoteCountSelectionString() {
         String voteCount =   MoviesContract.MovieEntry.getVoteCountFromUri(mUri);
-        if(voteCount != null)
+        if(voteCount != null && !voteCount.equals("0"))
             return MoviesContract.MovieEntry.TABLE_NAME + "." +
                     MoviesContract.MovieEntry.COLUMN_VOTE_COUNT + " = ? ";
         else
@@ -127,13 +164,18 @@ public class MovieCursorQueryParameters {
     }
 
     public static String getVoteCountSelectionArg() {
-        return MoviesContract.MovieEntry.getVoteCountFromUri(mUri);
+        String voteCount =  MoviesContract.MovieEntry.getVoteCountFromUri(mUri);
+        if(voteCount != null && !voteCount.equals("0"))
+            return voteCount;
+        else
+            return null;
+
     }
 
     @Nullable
     public static String getTimePeriodSelectionString() {
         String timePeriod =   MoviesContract.MovieEntry.getTimePeriodFromUri(mUri);
-        if(timePeriod != null) {
+        if(timePeriod != null && !timePeriod.equals("all")) {
             TimePeriod tp = new TimePeriod(timePeriod);
 
             if(tp.isDateRange()){
@@ -155,7 +197,7 @@ public class MovieCursorQueryParameters {
 
     public static String[] getTimePeriodSelectionArgs() {
         String timePeriod =   MoviesContract.MovieEntry.getTimePeriodFromUri(mUri);
-        if(timePeriod != null) {
+        if(timePeriod != null  && !timePeriod.equals("all")) {
             TimePeriod tp = new TimePeriod(timePeriod);
 
             if(tp.isDateRange()){
@@ -205,30 +247,36 @@ public class MovieCursorQueryParameters {
             return null;
     }
 
-    public static String getSortOrder(){
+    public String getSortOrder(){
 
         String sortOrder = MoviesContract.MovieEntry.getSortOrderFromUri(mUri);
 
-        // TODO  Make ASC/DESC, revenue, PRIMARY_RELEASE dates work
+        // TODO  Make revenue, PRIMARY_RELEASE dates work
         switch (sortOrder){
             case "none":
                 return "";
             case "popularity.desc":
                 return MoviesContract.MovieEntry.TABLE_NAME + "."
-                        + MoviesContract.MovieEntry.COLUMN_VOTE_COUNT;
+                        + MoviesContract.MovieEntry.COLUMN_VOTE_COUNT +
+                        " DESC ";
             case "vote_average.desc":
                 return MoviesContract.MovieEntry.TABLE_NAME + "."
-                        + MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE;
+                        + MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE +
+                        " DESC ";
             case "release_date.desc":
                 return MoviesContract.MovieEntry.TABLE_NAME + "."
-                        + MoviesContract.MovieEntry.COLUMN_RELEASE_DATE;
+                        + MoviesContract.MovieEntry.COLUMN_RELEASE_DATE +
+                        " DESC ";
             case "primary_release_date.desc":
                 return MoviesContract.MovieEntry.TABLE_NAME + "."
-                        + MoviesContract.MovieEntry.COLUMN_RELEASE_DATE;
+                        + MoviesContract.MovieEntry.COLUMN_RELEASE_DATE +
+                        " DESC ";
             case "original_title.asc":
                 return MoviesContract.MovieEntry.TABLE_NAME + "."
                         + MoviesContract.MovieEntry.COLUMN_ORIGINAL_TITLE;
+            default:
+                return "";   // No sorting
         }
-        return sortOrder;
+
     }
 }

@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +63,8 @@ import static com.example.android.popularmovies.app.MoviesContract.CONTENT_AUTHO
 
 public class MovieProvider extends ContentProvider {
 
+    public static final String LOG_TAG = MovieProvider.class.getSimpleName();
+
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private MoviesDbHelper mOpenHelper;
 
@@ -96,7 +99,6 @@ public class MovieProvider extends ContentProvider {
                 break;
             }
             case MOVIES_WITH_QUERY_STRING: {
-                // TODO make separate function for handling query strings
                 retCursor = getMoviesWithQueryString(uri, projection, sortOrder);
                 break;
             }
@@ -109,15 +111,18 @@ public class MovieProvider extends ContentProvider {
 
     private Cursor getMoviesWithQueryString(Uri uri, String[] projection, String sortOrder) {
 
+        MovieCursorQueryParameters mcqp = new MovieCursorQueryParameters(uri);
+
+        Log.v(LOG_TAG, "*** getMoviesWithQueryString sortOrder : "  + mcqp.mSortOrder);
 
         return  mOpenHelper.getReadableDatabase().query(
                 MoviesContract.MovieEntry.TABLE_NAME,
                 projection,
-                null,  // TODO getSelection(uri),
-                null,  // TODO selectionArgs,
+                mcqp.getSelection(),
+                mcqp.getSelectionArgs(),
                 null,
                 null,
-                sortOrder
+                mcqp.getSortOrder()
         );
 
     }
