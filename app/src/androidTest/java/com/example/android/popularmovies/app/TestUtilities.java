@@ -1,5 +1,6 @@
 package com.example.android.popularmovies.app;
 
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.ContentObserver;
@@ -11,6 +12,7 @@ import android.os.HandlerThread;
 import android.test.AndroidTestCase;
 
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,6 +58,35 @@ public class TestUtilities extends AndroidTestCase {
         movieValues.put(MoviesContract.MovieEntry.COLUMN_WATCH_ME, 0);
 
         return movieValues;
+    }
+
+    static ContentValues[] createBulkInsertMovieContentValues(){
+
+        ContentValues[] cv = new ContentValues[20];
+
+        for (int i = 0; i < 20; i++) {
+            ContentValues movieValues = new ContentValues();
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, "/fYzpM9GmpBlIC893fNjoWCwE24H.jpg");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_ADULT, 0);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW, "Thirty years after defeating the Galactic Empire, Han Solo and his allies face a new threat from the evil Kylo Ren and his army of Stormtroopers.");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, "2015-12-18");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_MOVIE_ID, 140607 + i);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_TITLE, "Star Wars: The Force Awakens");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, "en");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, i + "Star Wars: The Force Awakens");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_BACKDROP_PATH, "/njv65RTipNSTozFLuF85jL0bcQe.jpg");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_POPULARITY, i+79.08);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_COUNT, 1426-i);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_VIDEO, 0);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, (i/10) + 8.05);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_GENRE_IDS, "28,12,878,14");
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_FAVORITE, Math.round(Math.random()));
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_WATCHED, 0);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_WATCH_ME, 0);
+            cv[i] = movieValues;
+        }
+        return cv;
+
     }
 
     static ContentValues createTrailerValues() {

@@ -15,13 +15,39 @@
  */
 package com.example.android.popularmovies.app;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.net.Uri;
 import android.provider.BaseColumns;
+
+import java.net.URI;
 
 
 public class MoviesContract {
 
+    public static final String CONTENT_AUTHORITY = "com.example.android.popularmovies.app";
+
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+
+
+    public static final String PATH_TRAILER = "trailer";
+    public static final String PATH_REVIEW = "review";
+    public static final String PATH_MOVIE = "movie";
+
+
+    // TODO  Add IDs for which_movies && order_by?
+
 
     public static final class TrailerEntry implements BaseColumns {
+
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_TRAILER).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_TRAILER;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_TRAILER;
 
         public static final String TABLE_NAME = "trailer";
 
@@ -31,9 +57,27 @@ public class MoviesContract {
         public static final String COLUMN_SIZE = "size";
         public static final String COLUMN_SOURCE = "source";
         public static final String COLUMN_TYPE = "trailer";
+
+
+        public static Uri buildTrailerUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+
+
     }
 
     public static final class ReviewEntry implements BaseColumns {
+
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEW).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
+
 
         public static final String TABLE_NAME = "review";
 
@@ -43,9 +87,24 @@ public class MoviesContract {
         public static final String COLUMN_AUTHOR = "author";
         public static final String COLUMN_CONTENT = "content";
         public static final String COLUMN_URL = "url";
+
+
+        public static Uri buildReviewUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+
     }
 
     public static final class MovieEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
 
         public static final String TABLE_NAME = "movie";
 
@@ -67,6 +126,89 @@ public class MoviesContract {
         public static final String COLUMN_WATCHED = "watched";
         public static final String COLUMN_WATCH_ME = "watch_me";
 
+
+        // Build a URI for getting details for a single movie from its movie_id
+        public static Uri buildMovieUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+
+        public static Uri buildMoviesUri(){
+            return CONTENT_URI.buildUpon().appendPath(PATH_MOVIE).build();
+        }
+
+        public static Uri buildMoviesUriWithQueryParameters(Uri uri, String[] keys, String[] values){
+            Uri newUri = uri.buildUpon().appendPath("/").build();
+
+            for (int i=0;i<keys.length;i++) {
+
+                switch (keys[i]){
+                    case "data_source":
+                        newUri = appendUriWithDataSource(newUri, values[i]);
+                        break;
+                    case "vote_count":
+                        newUri = appendUriWithVoteCount(newUri, values[i]);
+                        break;
+                    case "time_period":
+                        newUri = appendUriWithTimePeriod(newUri, values[i]);
+                        break;
+                    case "genre_ids":
+                        if(values[i] != null &&  !values[i].isEmpty())
+                            newUri = appendUriWithGenres(newUri, values[i]);
+                        break;
+                    case "sort_order":
+                        newUri = appendUriWithSortOrder(newUri, values[i]);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return newUri;
+        }
+        
+        public static Uri appendUriWithDataSource(Uri oldUri, String dataSource){
+            return oldUri.buildUpon().appendQueryParameter("data_source", dataSource).build();
+        }
+
+        public static Uri appendUriWithVoteCount(Uri oldUri, String voteCount){
+            return oldUri.buildUpon().appendQueryParameter("vote_count", voteCount).build();
+        }
+
+        public static Uri appendUriWithTimePeriod(Uri oldUri, String timePeriod){
+            return oldUri.buildUpon().appendQueryParameter("time_period", timePeriod).build();
+        }
+
+        public static Uri appendUriWithGenres(Uri oldUri, String genres){
+            return oldUri.buildUpon().appendQueryParameter("genre_ids", genres).build();
+        }
+
+        public static Uri appendUriWithSortOrder(Uri oldUri, String sortOrder){
+            return oldUri.buildUpon().appendQueryParameter("sort_order", sortOrder).build();
+        }
+
+
+        public static String getDataSourceFromUri(Uri uri){
+            return uri.getQueryParameter("data_source");
+        }
+
+        public static String getVoteCountFromUri(Uri uri){
+            return uri.getQueryParameter("vote_count");
+        }
+
+        public static String getTimePeriodFromUri(Uri uri){
+            return uri.getQueryParameter("time_period");
+        }
+
+        public static String getGenreIdsFromUri(Uri uri){
+            return uri.getQueryParameter("genre_ids");
+        }
+
+        public static String getSortOrderFromUri(Uri uri){
+            return uri.getQueryParameter("sort_order");
+        }
+
+        // TODO Implement function to get __ID from movie_id
+        //    Probably doesn't go here
     }
 
 

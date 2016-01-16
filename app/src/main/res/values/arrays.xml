@@ -162,4 +162,15 @@
     <string-array name="empty_array"/>
 
 
+    <string-array name="pref_data_source_options">
+        <item>"themoviedb.org web site"</item>
+        <item>"Local Cache</item>
+        <item>"Favorites List"</item>
+    </string-array>
+
+    <string-array name="pref_data_source_values">
+        <item>"network"</item>
+        <item>"cache"</item>
+        <item>"favorites"</item>
+    </string-array>
 </resources>

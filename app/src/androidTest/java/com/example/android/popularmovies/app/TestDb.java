@@ -97,8 +97,10 @@ public class TestDb extends AndroidTestCase {
         db.close();
     }
 
+    // TODO:  Inesert 20 movies rather than 1
     public void testMovieTable() {
         insertMovie();
+        //  insertMovies();
     }
 
     public void testTrailerTable() {
@@ -186,4 +188,6 @@ public class TestDb extends AndroidTestCase {
         db.close();
         return movieRowId;
     }
+
+
 }

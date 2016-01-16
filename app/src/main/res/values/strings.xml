@@ -141,4 +141,9 @@
  <string name="movie_details_release_date">Release Date\n</string>
  <string name="movie_review_content">content</string>
 
+
+ <string name="pref_data_source_label">Data Source</string>
+ <string name="pref_data_source_key">data_source</string>
+ <string name="pref_data_source_network">network</string>
+
 </resources>

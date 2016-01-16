@@ -3,6 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ListPreference
+        android:title="@string/pref_data_source_label"
+        android:key="@string/pref_data_source_key"
+        android:defaultValue="@string/pref_data_source_network"
+        android:entryValues="@array/pref_data_source_values"
+        android:entries="@array/pref_data_source_options" />
 
     <ListPreference
         android:title="@string/pref_sort_order_label"

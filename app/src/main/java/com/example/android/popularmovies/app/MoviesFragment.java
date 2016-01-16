@@ -15,8 +15,14 @@
  */
 package com.example.android.popularmovies.app;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -28,8 +34,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.CursorAdapter;
 import android.widget.GridView;
 
+import com.example.android.popularmovies.app.MoviesContract.MovieEntry;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -37,6 +45,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import org.apache.http.Header;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class MoviesFragment extends Fragment {
 
@@ -49,6 +58,9 @@ public class MoviesFragment extends Fragment {
     private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
     private MoviesAdapter moviesAdapter;
 
+    private MoviesCursorAdapter moviesCursorAdapter;
+    SharedPreferences prefs;
+
     public MoviesFragment() {
     }
 
@@ -60,6 +72,7 @@ public class MoviesFragment extends Fragment {
             moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
         else
             moviesResultsEntity = savedInstanceState.getParcelableArrayList("movies");
+
 
         setHasOptionsMenu(true);
     }
@@ -85,11 +98,18 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
         View rootView = inflater.inflate(R.layout.movie_fragment, container, false);
 
-        GridView gridView = attachMoviesAdapterToGridView(rootView);
-        setMovieItemClickListener(gridView);
-        setUpMovieGridviewEndlessScrolling(gridView);
+        String dataSource = getDataSource();
+        if(dataSource.equals("network")) {
+            GridView gridView = attachMoviesAdapterToGridView(rootView);
+            setMovieItemClickListener(gridView);
+            setUpMovieGridviewEndlessScrolling(gridView);
+        } else {
+            GridView gridView = attachMoviesCursorAdapterToGridView(rootView);
+        }
 
         return rootView;
     }
@@ -97,7 +117,8 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        getFirstPageOfMovies();
+        if(getDataSource().equals("network"))
+            getFirstPageOfMovies();
     }
 
 
@@ -117,6 +138,63 @@ public class MoviesFragment extends Fragment {
         moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
         gridView.setAdapter(moviesAdapter);
         return gridView;
+    }
+
+    private GridView attachMoviesCursorAdapterToGridView(View rootView) {
+
+        /* Form Uri from current prefs */
+        Uri uri = getUriFromPreferences();
+
+        /* Get cursor from Uri   */
+        Cursor cursor = getActivity().getContentResolver().query(
+                uri,
+                null, null, null, null );
+
+        /* Create new MovieCursorAdapter, passing it the cursor */
+        moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor, 0);
+        /* Attach  the gridview to the  new MovieCursorAdapter */
+
+        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
+        gridView.setAdapter(moviesCursorAdapter);
+        return gridView;
+    }
+
+    private Uri getUriFromPreferences() {
+
+        String[] keys = {"data_source", "vote_count", "time_period", "genre_ids", "sort_order"};
+
+        String dataSource = prefs.getString(getActivity().getString(R.string.pref_data_source_key), "network");
+        String voteCount = prefs.getString(getActivity().getString(R.string.pref_vote_count_key), "0");
+        String timePeriods = prefs.getString(getActivity().getString(R.string.pref_period_key), "all");
+        String genreIds = getGenresAsCommaSeparatedNumbers();
+                // prefs.getString(getActivity().getString(R.string.pref_genre_ids_key), "");
+        String sortOrder = prefs.getString(getActivity().getString(R.string.pref_sort_order_key), "none");
+
+        String[] values = {
+             dataSource, voteCount, timePeriods, genreIds, sortOrder
+        };
+
+
+        Uri uri = MoviesContract.MovieEntry.buildMoviesUriWithQueryParameters(
+                MovieEntry.CONTENT_URI,
+                keys,
+                values
+        );
+
+        return uri;
+    }
+
+    private String getGenresAsCommaSeparatedNumbers() {
+
+        String genres;
+        Set<String> genresSet = prefs.getStringSet("genre_ids", null);
+        if ( genresSet != null && !genresSet.isEmpty()  )
+            genres = genresSet.toString().replaceAll("\\s+", "").replace("[", "").replace("]", "");
+        else
+            genres = "";
+
+        return genres;
     }
 
     private void setMovieItemClickListener(GridView gridView) {
@@ -175,8 +253,27 @@ public class MoviesFragment extends Fragment {
 
     }
 
+    private void fetchMovies(int currentPage) {
 
-    private void fetchMovies(final int page) {
+        fetchMoviesFromWeb(currentPage);
+        stashMoviesInDatabase();
+
+    }
+
+    @NonNull
+    private String getDataSource() {
+        return prefs.getString(
+                getActivity().getString(R.string.pref_data_source_key), "network");
+    }
+
+    private void stashMoviesInDatabase() {
+        if(!moviesResultsEntity.isEmpty())
+            for (MoviesResponse.ResultsEntity mr : moviesResultsEntity)
+                addMovieToDb(mr);
+    }
+
+
+    private void fetchMoviesFromWeb(final int page) {
 
         TmdbApiParameters apiParams = new TmdbApiParameters(getActivity(), page);
         String url = apiParams.buildMoviesUri().toString();
@@ -214,5 +311,36 @@ public class MoviesFragment extends Fragment {
         return gson.fromJson(responsestr, MoviesResponse.class);
     }
 
+    private void addMovieToDb(MoviesResponse.ResultsEntity mr){
+
+        ContentValues movieValues = new ContentValues();
+
+        movieValues.put(MovieEntry.COLUMN_POSTER_PATH, mr.getPoster_path() );
+        movieValues.put(MovieEntry.COLUMN_ADULT, mr.isAdult());
+        movieValues.put(MovieEntry.COLUMN_OVERVIEW, mr.getOverview());
+        movieValues.put(MovieEntry.COLUMN_RELEASE_DATE, mr.getRelease_date());
+        movieValues.put(MovieEntry.COLUMN_MOVIE_ID, mr.getId());
+        movieValues.put(MovieEntry.COLUMN_ORIGINAL_TITLE, mr.getOriginal_title());
+        movieValues.put(MovieEntry.COLUMN_ORIGINAL_LANGUAGE, mr.getOriginal_language());
+        movieValues.put(MovieEntry.COLUMN_TITLE, mr.getTitle());
+        movieValues.put(MovieEntry.COLUMN_BACKDROP_PATH, mr.getBackdrop_path());
+        movieValues.put(MovieEntry.COLUMN_POPULARITY, mr.getPopularity());
+        movieValues.put(MovieEntry.COLUMN_VOTE_COUNT, mr.getVote_count());
+        movieValues.put(MovieEntry.COLUMN_VIDEO, mr.isVideo());
+        movieValues.put(MovieEntry.COLUMN_VOTE_AVERAGE, mr.getVote_average());
+        movieValues.put(MovieEntry.COLUMN_GENRE_IDS, mr.getGenre_ids().toString());
+
+        /*  These are initial values, all set to zero  */
+        movieValues.put(MovieEntry.COLUMN_FAVORITE, 0);
+        movieValues.put(MovieEntry.COLUMN_WATCHED, 0);
+        movieValues.put(MovieEntry.COLUMN_WATCH_ME, 0);
+
+        getContext().getContentResolver().insert(
+                MovieEntry.CONTENT_URI, movieValues
+        );
+
+
+        return;
+    }
 
 }

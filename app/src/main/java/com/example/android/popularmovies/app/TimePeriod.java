@@ -17,6 +17,29 @@ public class TimePeriod {
 
     }
 
+
+    public Boolean isDateRange(){
+        if(onOrBeforeThisDate != "" && onOrAfterThisDate != "")
+            return true;
+        else
+            return false;
+
+    }
+
+    public Boolean isOnlyAfter(){
+        if(onOrBeforeThisDate == "" && onOrAfterThisDate != "")
+            return true;
+        else
+            return false;
+    }
+
+    public Boolean isOnlyBefore(){
+        if(onOrBeforeThisDate != "" && onOrAfterThisDate == "")
+            return true;
+        else
+            return false;
+    }
+
     private void computeRanges(){
 
         switch (periodPreference){
@@ -88,7 +111,7 @@ public class TimePeriod {
 
 
     private void get2010s() {
-        onOrAfterThisDate = "2010-1-1";   onOrBeforeThisDate = "2010-12-31";
+        onOrAfterThisDate = "2010-1-1";   onOrBeforeThisDate = "2020-12-31";
     }
 
     private void get2000s() {
