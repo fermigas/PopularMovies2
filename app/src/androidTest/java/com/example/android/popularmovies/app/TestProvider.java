@@ -76,8 +76,12 @@ public class TestProvider  extends AndroidTestCase {
                 null,
                 null
         );
+
+    if(cursor != null) {
         assertEquals("Error: Records not deleted from Movie table during delete", 0, cursor.getCount());
         cursor.close();
+    }
+
     }
 
 
@@ -86,7 +90,7 @@ public class TestProvider  extends AndroidTestCase {
         MoviesDbHelper dbHelper = new MoviesDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        ContentValues movieValues = TestUtilities.createMovieValues();
+        ContentValues movieValues = TestUtilities.createMovieValues(mContext);
 
         long movieRowId = db.insert(MovieEntry.TABLE_NAME, null, movieValues);
         assertTrue("Unable to Insert MovieEntry into the Database", movieRowId != -1);
@@ -101,6 +105,9 @@ public class TestProvider  extends AndroidTestCase {
                 null,
                 null
         );
+
+        if(movieCursor != null)
+            movieCursor.close();
     }
 
     public void testProviderRegistry() {
@@ -133,7 +140,7 @@ public class TestProvider  extends AndroidTestCase {
     public void testInsertReadProvider() {
 
         // Fantastic.  Now that we have a location, add some Movie!
-        ContentValues MovieValues = TestUtilities.createMovieValues();
+        ContentValues MovieValues = TestUtilities.createMovieValues(mContext);
         // The TestContentObserver is a one-shot class
         TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
 
@@ -150,7 +157,7 @@ public class TestProvider  extends AndroidTestCase {
         mContext.getContentResolver().unregisterContentObserver(tco);
 
         // A cursor is your primary interface to the query results.
-        Cursor MovieCursor = mContext.getContentResolver().query(
+        Cursor movieCursor = mContext.getContentResolver().query(
                 MovieEntry.CONTENT_URI,  // Table to Query
                 null, // leaving "columns" null just returns all the columns.
                 null, // cols for "where" clause
@@ -159,7 +166,10 @@ public class TestProvider  extends AndroidTestCase {
         );
 
         TestUtilities.validateCursor("testInsertReadProvider. Error validating MovieEntry insert.",
-                MovieCursor, MovieValues);
+                movieCursor, MovieValues);
+
+        if(movieCursor != null)
+            movieCursor.close();
 
     }
 
@@ -194,7 +204,7 @@ public class TestProvider  extends AndroidTestCase {
         // Now we can bulkInsert some Movie.  In fact, we only implement BulkInsert for Movie
         // entries.  With ContentProviders, you really only have to implement the features you
         // use, after all.
-        ContentValues[] bulkInsertContentValues = TestUtilities.createBulkInsertMovieContentValues();
+        ContentValues[] bulkInsertContentValues = TestUtilities.createBulkInsertMovieContentValues(mContext);
 
         // Register a content observer for our bulk insert.
         TestUtilities.TestContentObserver movieObserver = TestUtilities.getTestContentObserver();

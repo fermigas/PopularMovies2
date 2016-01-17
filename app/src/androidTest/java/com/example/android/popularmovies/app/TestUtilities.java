@@ -1,18 +1,19 @@
 package com.example.android.popularmovies.app;
 
-import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.test.AndroidTestCase;
 
 
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,13 +32,15 @@ public class TestUtilities extends AndroidTestCase {
             int idx = valueCursor.getColumnIndex(columnName);
             assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
             String expectedValue = entry.getValue().toString();
-            assertEquals("Value '" + entry.getValue().toString() +
+
+            if(!entry.getKey().equals("poster_bitmap"))
+                assertEquals("Value '" + entry.getValue().toString() +
                     "' did not match the expected value '" +
                     expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
         }
     }
 
-    static ContentValues createMovieValues() {
+    static ContentValues createMovieValues(Context context) {
         ContentValues movieValues = new ContentValues();
         movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, "/fYzpM9GmpBlIC893fNjoWCwE24H.jpg");
         movieValues.put(MoviesContract.MovieEntry.COLUMN_ADULT, 0);
@@ -57,10 +60,28 @@ public class TestUtilities extends AndroidTestCase {
         movieValues.put(MoviesContract.MovieEntry.COLUMN_WATCHED, 0);
         movieValues.put(MoviesContract.MovieEntry.COLUMN_WATCH_ME, 0);
 
+        byte[] img=getBytes(BitmapFactory.decodeResource(context.getResources(), R.drawable.force_awakens));
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_BITMAP, img);
+
         return movieValues;
     }
 
-    static ContentValues[] createBulkInsertMovieContentValues(){
+
+        public static byte[] getBytes(Bitmap bitmap)
+        {
+            ByteArrayOutputStream stream=new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG,0, stream);
+            return stream.toByteArray();
+        }
+
+        public static Bitmap getImage(byte[] image)
+        {
+            return BitmapFactory.decodeByteArray(image, 0, image.length);
+        }
+
+
+
+     static ContentValues[] createBulkInsertMovieContentValues(Context context){
 
         ContentValues[] cv = new ContentValues[20];
 
@@ -83,6 +104,10 @@ public class TestUtilities extends AndroidTestCase {
             movieValues.put(MoviesContract.MovieEntry.COLUMN_FAVORITE, Math.round(Math.random()));
             movieValues.put(MoviesContract.MovieEntry.COLUMN_WATCHED, 0);
             movieValues.put(MoviesContract.MovieEntry.COLUMN_WATCH_ME, 0);
+
+            byte[] img=getBytes(BitmapFactory.decodeResource(context.getResources(), R.drawable.force_awakens));
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_BITMAP, img);
+
             cv[i] = movieValues;
         }
         return cv;
@@ -113,10 +138,10 @@ public class TestUtilities extends AndroidTestCase {
         return testValues;
     }
 
-    static long insertMovieValues(Context context) {
+     long insertMovieValues(Context context) {
         MoviesDbHelper dbHelper = new MoviesDbHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues testValues = TestUtilities.createMovieValues();
+        ContentValues testValues = createMovieValues(context);
 
         long movieRowId = db.insert(MoviesContract.MovieEntry.TABLE_NAME, null, testValues);
 

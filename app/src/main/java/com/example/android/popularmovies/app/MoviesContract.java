@@ -125,6 +125,7 @@ public class MoviesContract {
         public static final String COLUMN_FAVORITE = "favorite";
         public static final String COLUMN_WATCHED = "watched";
         public static final String COLUMN_WATCH_ME = "watch_me";
+        public static final String COLUMN_POSTER_BITMAP = "poster_bitmap";
 
 
         // Build a URI for getting details for a single movie from its movie_id

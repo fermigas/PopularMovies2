@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.example.android.popularmovies.app.MoviesContract.CONTENT_AUTHORITY;
@@ -113,7 +114,9 @@ public class MovieProvider extends ContentProvider {
 
         MovieCursorQueryParameters mcqp = new MovieCursorQueryParameters(uri);
 
-        Log.v(LOG_TAG, "*** getMoviesWithQueryString sortOrder : "  + mcqp.mSortOrder);
+        Log.v(LOG_TAG, " *** mcqp.getSelection:  "      + mcqp.getSelection());
+        Log.v(LOG_TAG, " *** mcqp.getSelectionArgs:  "  + Arrays.toString(mcqp.getSelectionArgs()));
+        Log.v(LOG_TAG, " *** mcqp.SortOrder:  "         + mcqp.getSortOrder());
 
         return  mOpenHelper.getReadableDatabase().query(
                 MoviesContract.MovieEntry.TABLE_NAME,

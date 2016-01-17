@@ -11,11 +11,8 @@ import java.util.regex.Pattern;
 
 public class MovieCursorQueryParameters {
 
-    static Uri mUri;
-    String[] mProjection;
-    String mSelection;
-    String[] mSelectionArgs;
-    String mSortOrder;
+   //  static
+    Uri mUri;
 
 
     public MovieCursorQueryParameters(Uri mUri) {
@@ -51,7 +48,7 @@ public class MovieCursorQueryParameters {
 
         Log.v(LOG_TAG, "*** getSelection string: " + selection.toString());
 
-        if(selection.toString() == "")
+        if(selection.toString().equals(""))
             return null;  // Makes sure the cursor has a "no args" case
 
         return selection.toString();
@@ -68,7 +65,7 @@ public class MovieCursorQueryParameters {
 
     public String[] getSelectionArgs (){
 
-        List<String> selectionArgsList = new ArrayList<String>();
+        List<String> selectionArgsList = new ArrayList<>();
 
         String dataSource = getDataSourceSelectionStringArgs();
         if(dataSource != null)
@@ -106,54 +103,65 @@ public class MovieCursorQueryParameters {
 
 
     @Nullable
-    public static String getDataSourceSelectionString() {
+   public String getDataSourceSelectionString() {
         String dataSource = MoviesContract.MovieEntry.getDataSourceFromUri(mUri);
-        switch (dataSource){
 
-            // return nothing;  parameter doesn't get added
-            case "all":
-                return null;
-            // return
-            case "favorite_movies":
-                return
-                        MoviesContract.MovieEntry.TABLE_NAME + "." +
-                        MoviesContract.MovieEntry.COLUMN_FAVORITE + " = ? ";
-            case "watched":
-                return
-                        MoviesContract.MovieEntry.TABLE_NAME + "." +
-                        MoviesContract.MovieEntry.COLUMN_WATCHED + " = ? ";
-            case "watch_me":
-                return
-                        MoviesContract.MovieEntry.TABLE_NAME + "." +
-                        MoviesContract.MovieEntry.COLUMN_WATCH_ME + " = ? ";
-            default:
-                return null;
+        if(dataSource != null) {
+            switch (dataSource) {
+
+                // return nothing;  parameter doesn't get added
+                case "all":
+                    return null;
+                // return
+                case "favorite_movies":
+                    return
+                            MoviesContract.MovieEntry.TABLE_NAME + "." +
+                                    MoviesContract.MovieEntry.COLUMN_FAVORITE + " = ? ";
+                case "watched":
+                    return
+                            MoviesContract.MovieEntry.TABLE_NAME + "." +
+                                    MoviesContract.MovieEntry.COLUMN_WATCHED + " = ? ";
+                case "watch_me":
+                    return
+                            MoviesContract.MovieEntry.TABLE_NAME + "." +
+                                    MoviesContract.MovieEntry.COLUMN_WATCH_ME + " = ? ";
+                default:
+                    return null;
+            }
         }
+        else
+            return null;
     }
 
 
     @Nullable
-    public static String getDataSourceSelectionStringArgs() {
+    public String getDataSourceSelectionStringArgs() {
         String dataSource = MoviesContract.MovieEntry.getDataSourceFromUri(mUri);
-        switch (dataSource){
 
-            // return nothing;  parameter doesn't get added
-            case "all":
-                return null;
-            // return
-            case "favorite_movies":
-                return "1";
-            case "watched":
-                return "1";
-            case "watch_me":
-                return "1";
-            default:
-                return null;
+        if(dataSource != null) {
+
+            switch (dataSource) {
+
+                // return nothing;  parameter doesn't get added
+                case "all":
+                    return null;
+                // return
+                case "favorite_movies":
+                    return "1";
+                case "watched":
+                    return "1";
+                case "watch_me":
+                    return "1";
+                default:
+                    return null;
+            }
         }
+        else
+            return null;
     }
 
     @Nullable
-    public static String getVoteCountSelectionString() {
+    public String getVoteCountSelectionString() {
         String voteCount =   MoviesContract.MovieEntry.getVoteCountFromUri(mUri);
         if(voteCount != null && !voteCount.equals("0"))
             return MoviesContract.MovieEntry.TABLE_NAME + "." +
@@ -163,7 +171,7 @@ public class MovieCursorQueryParameters {
 
     }
 
-    public static String getVoteCountSelectionArg() {
+    public String getVoteCountSelectionArg() {
         String voteCount =  MoviesContract.MovieEntry.getVoteCountFromUri(mUri);
         if(voteCount != null && !voteCount.equals("0"))
             return voteCount;
@@ -173,7 +181,7 @@ public class MovieCursorQueryParameters {
     }
 
     @Nullable
-    public static String getTimePeriodSelectionString() {
+    public String getTimePeriodSelectionString() {
         String timePeriod =   MoviesContract.MovieEntry.getTimePeriodFromUri(mUri);
         if(timePeriod != null && !timePeriod.equals("all")) {
             TimePeriod tp = new TimePeriod(timePeriod);
@@ -195,7 +203,7 @@ public class MovieCursorQueryParameters {
 
     }
 
-    public static String[] getTimePeriodSelectionArgs() {
+    public String[] getTimePeriodSelectionArgs() {
         String timePeriod =   MoviesContract.MovieEntry.getTimePeriodFromUri(mUri);
         if(timePeriod != null  && !timePeriod.equals("all")) {
             TimePeriod tp = new TimePeriod(timePeriod);
@@ -215,7 +223,7 @@ public class MovieCursorQueryParameters {
     }
 
 
-    public static String getGenreIdsSelectionString() {
+    public String getGenreIdsSelectionString() {
         String genreIds =   MoviesContract.MovieEntry.getGenreIdsFromUri(mUri);
         if(genreIds != null) {
             String[] ids = genreIds.split(Pattern.quote(","));
@@ -239,7 +247,7 @@ public class MovieCursorQueryParameters {
 
     }
 
-    public static String[] getGenreIdsSelectionArgs() {
+    public String[] getGenreIdsSelectionArgs() {
         String genreIds =   MoviesContract.MovieEntry.getGenreIdsFromUri(mUri);
         if(genreIds != null)
             return genreIds.split(Pattern.quote(","));
@@ -257,7 +265,7 @@ public class MovieCursorQueryParameters {
                 return "";
             case "popularity.desc":
                 return MoviesContract.MovieEntry.TABLE_NAME + "."
-                        + MoviesContract.MovieEntry.COLUMN_VOTE_COUNT +
+                        + MoviesContract.MovieEntry.COLUMN_POPULARITY +
                         " DESC ";
             case "vote_average.desc":
                 return MoviesContract.MovieEntry.TABLE_NAME + "."

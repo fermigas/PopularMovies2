@@ -115,7 +115,7 @@ public class TimePeriod {
     }
 
     private void get2000s() {
-        onOrAfterThisDate = "2000-1-1";   onOrBeforeThisDate = "2000-12-31";
+        onOrAfterThisDate = "2000-1-1";   onOrBeforeThisDate = "2009-12-31";
     }
 
     private void get1990s() {

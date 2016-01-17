@@ -20,6 +20,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -40,9 +42,12 @@ import com.example.android.popularmovies.app.MoviesContract.MovieEntry;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import org.apache.http.Header;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -71,6 +76,9 @@ public class MoviesFragment extends Fragment {
 
         Log.v(LOG_TAG, "*** Entering OnCreate()");
 
+
+        // TODO  -- this only saves network data;  we need to save cache/favorites, too?
+           // Maybe not, it's just grabbed from the database
         if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
             moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
         else
@@ -78,6 +86,14 @@ public class MoviesFragment extends Fragment {
 
 
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        closeCursorIfNecessary();
+
+        Log.v(LOG_TAG, "*** In OnPause()");
     }
 
     @Override
@@ -169,20 +185,28 @@ public class MoviesFragment extends Fragment {
 
         Uri uri = getUriFromPreferences();
 
-        // TODO:  close cursor
-        if(mCursor != null && !mCursor.isClosed() )
-            mCursor.close();
+        closeCursorIfNecessary();
+
 
         mCursor = getActivity().getContentResolver().query(
                 uri,
                 null, null, null, null );
 
+
+        // TODO remove this, move first instead
         String cursorContents = DatabaseUtils.dumpCursorToString(mCursor);
         Log.v(LOG_TAG, cursorContents);
 
+        // mCursor.moveToFirst();
 
         return mCursor;
 
+    }
+
+    private void closeCursorIfNecessary() {
+        // TODO:  close cursor
+        if(mCursor != null && !mCursor.isClosed() )
+            mCursor.close();
     }
 
     private Uri getUriFromPreferences() {
@@ -333,9 +357,39 @@ public class MoviesFragment extends Fragment {
         return gson.fromJson(responsestr, MoviesResponse.class);
     }
 
-    private void addMovieToDb(MoviesResponse.ResultsEntity mr){
+    private void addMovieToDb(final MoviesResponse.ResultsEntity mr){
 
-        ContentValues movieValues = new ContentValues();
+        final ContentValues movieValues = new ContentValues();
+
+        String fullPosterPathUrl =
+                getContext().getString(R.string.tmdb_base_image_url) + getContext().getString(R.string.tmdb_image_size_185) + mr.getPoster_path();
+
+        final Target target;
+        Picasso.with(getActivity())
+                .load(fullPosterPathUrl)
+                .into(target = new Target() {
+
+                @Override
+                public void onBitmapLoaded (final Bitmap bitmap, Picasso.LoadedFrom from){
+                    byte[] imageBytes = getBitmapAsByteArray(bitmap);
+                    insertMovieIntoDB(imageBytes, movieValues, mr);
+                }
+
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+
+                    Log.v(LOG_TAG, "*** Failed to Download Bitmap");
+
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) { }
+            }
+            );
+
+    }
+
+    private void insertMovieIntoDB(byte[] imageBytes, ContentValues movieValues, MoviesResponse.ResultsEntity mr) {
 
         movieValues.put(MovieEntry.COLUMN_POSTER_PATH, mr.getPoster_path() );
         movieValues.put(MovieEntry.COLUMN_ADULT, mr.isAdult());
@@ -357,11 +411,18 @@ public class MoviesFragment extends Fragment {
         movieValues.put(MovieEntry.COLUMN_WATCHED, 0);
         movieValues.put(MovieEntry.COLUMN_WATCH_ME, 0);
 
+        movieValues.put(MovieEntry.COLUMN_POSTER_BITMAP, imageBytes);
+
         getContext().getContentResolver().insert(
-                MovieEntry.CONTENT_URI, movieValues
-        );
+                MovieEntry.CONTENT_URI, movieValues);
 
+        Log.v(LOG_TAG, "*** Downloaded Bitmap Successfully and inserted it");
+    }
 
+    public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+        return outputStream.toByteArray();
     }
 
 }

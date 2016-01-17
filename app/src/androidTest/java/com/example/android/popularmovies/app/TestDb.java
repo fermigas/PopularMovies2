@@ -85,6 +85,7 @@ public class TestDb extends AndroidTestCase {
         movieColumnHashSet.add(MovieEntry.COLUMN_FAVORITE);
         movieColumnHashSet.add(MovieEntry.COLUMN_WATCHED);
         movieColumnHashSet.add(MovieEntry.COLUMN_WATCH_ME);
+        movieColumnHashSet.add(MovieEntry.COLUMN_POSTER_BITMAP);
 
         int columnNameIndex = cursor.getColumnIndex("name");
         do {
@@ -167,7 +168,7 @@ public class TestDb extends AndroidTestCase {
         MoviesDbHelper dbHelper = new MoviesDbHelper(mContext);
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        ContentValues testValues = TestUtilities.createMovieValues();
+        ContentValues testValues = TestUtilities.createMovieValues(mContext);
 
         long movieRowId = db.insert(MovieEntry.TABLE_NAME, null, testValues);
 

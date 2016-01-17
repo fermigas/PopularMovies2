@@ -11,7 +11,7 @@ import android.test.AndroidTestCase;
 public class TestMovieCursorQueryParameters extends AndroidTestCase {
 
     public static final String[] TEST_KEYS = new String[]{
-            "which_movies", "vote_count", "time_period", "genre_ids", "sort_order"
+            "data_source", "vote_count", "time_period", "genre_ids", "sort_order"
     };
 
     public static final String[] TEST_VALUES = new String[]{
@@ -26,28 +26,28 @@ public class TestMovieCursorQueryParameters extends AndroidTestCase {
             );
 
 
-    public static final String sWhichMoviesFavoritesSelection =
+    public static final String sDataSourceFavoritesSelection =
             MoviesContract.MovieEntry.TABLE_NAME + "."
                     + MoviesContract.MovieEntry.COLUMN_FAVORITE + " = ? ";
 
-    public static final String sWhichMoviesFavoritesSelectionArgs = "1";   // true
+    public static final String sDataSourceFavoritesSelectionArgs = "1";   // true
 
 
-    public void testWhichMoviesFavoritesSelection() {
+    public void testDataSourceFavoritesSelection() {
 
         MovieCursorQueryParameters mcqp = new MovieCursorQueryParameters(TEST_ALL_QUERY_STRINGS);
 
         assertEquals("Error: the favorite_movies selection string was formed improperly.",
-                mcqp.getDataSourceSelectionString(), sWhichMoviesFavoritesSelection);
+                mcqp.getDataSourceSelectionString(), sDataSourceFavoritesSelection);
 
     }
 
-    public void testWhichMoviesFavoritesSelectionArgs() {
+    public void testDataSourceFavoritesSelectionArgs() {
 
         MovieCursorQueryParameters mcqp = new MovieCursorQueryParameters(TEST_ALL_QUERY_STRINGS);
 
         assertEquals("Error: the favorite_movies Selection Arg string was formed improperly.",
-                mcqp.getDataSourceSelectionStringArgs(), sWhichMoviesFavoritesSelectionArgs);
+                mcqp.getDataSourceSelectionStringArgs(), sDataSourceFavoritesSelectionArgs);
 
     }
 
@@ -182,7 +182,7 @@ public class TestMovieCursorQueryParameters extends AndroidTestCase {
 
 
     public static final String sAllSelectionStrings =
-            sWhichMoviesFavoritesSelection  + " AND " +
+            sDataSourceFavoritesSelection + " AND " +
             sVoteCountSelection + " AND " +
             sTimePeriod1980sSelection  + " AND " +
                     sGenreIdsSelection;
@@ -197,7 +197,7 @@ public class TestMovieCursorQueryParameters extends AndroidTestCase {
     }
 
     public static final String[] sAllSelectionArgs = new String[]{
-            sWhichMoviesFavoritesSelectionArgs,
+            sDataSourceFavoritesSelectionArgs,
             sVoteCountSelectionArgs,
             "1980-1-1", "1989-12-31",
             "1", "2", "35793"};  // sGenreIdsSelectionArgs }
