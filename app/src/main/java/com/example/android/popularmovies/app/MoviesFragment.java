@@ -59,8 +59,8 @@ public class MoviesFragment extends Fragment {
     private Boolean currentlyFetchingMovies = true;
 
     private Boolean morePagesOfMoviesLeftToGet = true;
-    private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
-    private MoviesAdapter moviesAdapter;
+//    private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
+//    private MoviesAdapter moviesAdapter;
 
     private MoviesCursorAdapter moviesCursorAdapter;
     SharedPreferences prefs;
@@ -80,10 +80,10 @@ public class MoviesFragment extends Fragment {
 
         // TODO  -- this only saves network data;  we need to save cache/favorites, too?
            // Maybe not, it's just grabbed from the database
-        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
-            moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
-        else
-            moviesResultsEntity = savedInstanceState.getParcelableArrayList("movies");
+//        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
+//            moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
+//        else
+//            moviesResultsEntity = savedInstanceState.getParcelableArrayList("movies");
 
 
         setHasOptionsMenu(true);
@@ -92,7 +92,7 @@ public class MoviesFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outstate){
-        outstate.putParcelableArrayList("movies", moviesResultsEntity);
+//        outstate.putParcelableArrayList("movies", moviesResultsEntity);
         super.onSaveInstanceState(outstate);
     }
 
@@ -118,7 +118,7 @@ public class MoviesFragment extends Fragment {
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
 
         // TODO  MAke Sure these don't fail when there's no data nd no network
-        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
+//        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
 
         Cursor cursor = getCursorWithCurrentPreferences();
         if(cursor != null)
@@ -126,13 +126,14 @@ public class MoviesFragment extends Fragment {
         moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor , 0);
 
         //   Then, attach whichever one the prefs designate
-        String dataSource = getDataSource();
-        if(dataSource.equals("network")) {
-            mGridView.setAdapter(moviesAdapter);
-        } else {
-            mGridView.setAdapter(moviesCursorAdapter);
-        }
+//        String dataSource = getDataSource();
+//        if(dataSource.equals("network")) {
+//            mGridView.setAdapter(moviesAdapter);
+//        } else {
+//            mGridView.setAdapter(moviesCursorAdapter);
+//        }
 
+        mGridView.setAdapter(moviesCursorAdapter);
         return rootView;
     }
 
@@ -154,15 +155,16 @@ public class MoviesFragment extends Fragment {
 
         if(getDataSource().equals("network")) {
             getFirstPageOfMovies();
-            mGridView.setAdapter(moviesAdapter);
-            closeCursorIfNecessary(mCursor);
-            moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
+//            mGridView.setAdapter(moviesAdapter);
+//            closeCursorIfNecessary(mCursor);
+//            moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
         }
-        else {  //
+
+//        else {  //
             closeCursorIfNecessary(mCursor);
             moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
             mGridView.setAdapter(moviesCursorAdapter);
-        }
+ //       }
         setMovieItemClickListener(mGridView);
         setUpMovieGridviewEndlessScrolling(mGridView);
 
@@ -180,7 +182,7 @@ public class MoviesFragment extends Fragment {
 
     public void getFirstPageOfMovies() {
         morePagesOfMoviesLeftToGet = true;  // New data set on startup and on prefs changing
-        moviesAdapter.clear();  // Must do this when prefs change
+//        moviesAdapter.clear();  // Must do this when prefs change
 
         currentPage = 1;        // This is only called on startup, or when prefs change
         fetchMovies(currentPage);
@@ -200,8 +202,8 @@ public class MoviesFragment extends Fragment {
             cursor = getActivity().getContentResolver().query(
                     uri, null, null, null, null);
 
-//        String cursorContents = DatabaseUtils.dumpCursorToString(cursor);
-//        Log.v(LOG_TAG, cursorContents);
+        String cursorContents = DatabaseUtils.dumpCursorToString(cursor);
+        Log.v(LOG_TAG, cursorContents);
         }
         catch ( Exception e ){
             return null;
@@ -283,12 +285,12 @@ public class MoviesFragment extends Fragment {
     private void startMovieDetailsActivity(int position) {
 
         MoviesResponse.ResultsEntity movie;
-        if(getDataSource().equals("network")) {
-            movie = moviesAdapter.getItem(position);
-        }
-        else {
+//        if(getDataSource().equals("network")) {
+//            movie = moviesAdapter.getItem(position);
+//        }
+//        else {
             movie = getMovieFromCursor(position);
-        }
+//        }
         Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
         intent.putExtra("movie", movie);
         startActivity(intent);
@@ -373,7 +375,7 @@ public class MoviesFragment extends Fragment {
     private void fetchMovies(int currentPage) {
 
         fetchMoviesFromWeb(currentPage);
-        insertOrUpdateMovies();
+//        insertOrUpdateMovies();
 
     }
 
@@ -383,15 +385,15 @@ public class MoviesFragment extends Fragment {
                 getActivity().getString(R.string.pref_data_source_key), "network");
     }
 
-    private void insertOrUpdateMovies() {
-        if(!moviesResultsEntity.isEmpty())
-            for (MoviesResponse.ResultsEntity mr : moviesResultsEntity) {
-                if(!isMovieAlreadyInDb(mr))
-                    addMovieToDb(mr);
-                else
-                    updateMovie(mr);
-            }
-    }
+//    private void insertOrUpdateMovies() {
+//        if(!moviesResultsEntity.isEmpty())
+//            for (MoviesResponse.ResultsEntity mr : moviesResultsEntity) {
+//                if(!isMovieAlreadyInDb(mr))
+//                    addMovieToDb(mr);
+//                else
+//                    updateMovie(mr);
+//            }
+//    }
 
     private void updateMovie(MoviesResponse.ResultsEntity mr) {
 
@@ -458,9 +460,11 @@ public class MoviesFragment extends Fragment {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                addMoviesToAdapter(getMoviesResponse(responseBody));
+                // TODO Remove movieAdapter:
+                // addMoviesToAdapter(getMoviesResponse(responseBody));
+                int numberOfMovies = insertOrUpdateMovies(getMoviesResponse(responseBody));
                 // Don't allow more grid view scrolling when we're out of results
-                morePagesOfMoviesLeftToGet = moviesAdapter.getCount() >= 20;
+                morePagesOfMoviesLeftToGet = numberOfMovies >= 20;
             }
 
             @Override
@@ -470,13 +474,25 @@ public class MoviesFragment extends Fragment {
 
     }
 
-    private void addMoviesToAdapter(MoviesResponse moviesResponse) {
-        if(!moviesResponse.getResults().isEmpty()) {
-            for (MoviesResponse.ResultsEntity  result : moviesResponse.getResults() )
-                moviesAdapter.add(result);
-            currentlyFetchingMovies = false;  // This Async process is done, we can get more now if needed
-        }
+//    private void addMoviesToAdapter(MoviesResponse moviesResponse) {
+//        if(!moviesResponse.getResults().isEmpty()) {
+//            for (MoviesResponse.ResultsEntity  result : moviesResponse.getResults() )
+//                moviesAdapter.add(result);
+//            currentlyFetchingMovies = false;  // This Async process is done, we can get more now if needed
+//        }
+//    }
+
+    private int insertOrUpdateMovies(MoviesResponse moviesResponse) {
+        if(!moviesResponse.getResults().isEmpty())
+            for (MoviesResponse.ResultsEntity mr : moviesResponse.getResults()) {
+                if(!isMovieAlreadyInDb(mr))
+                    addMovieToDb(mr);
+                else
+                    updateMovie(mr);
+            }
+        return moviesResponse.getResults().size();
     }
+
 
     private MoviesResponse getMoviesResponse(byte[] responseBody) {
         String responsestr = new String(responseBody);
