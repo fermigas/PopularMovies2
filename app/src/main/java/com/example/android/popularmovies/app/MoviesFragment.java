@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -49,7 +50,9 @@ import org.apache.http.Header;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class MoviesFragment extends Fragment {
 
@@ -66,6 +69,7 @@ public class MoviesFragment extends Fragment {
     SharedPreferences prefs;
     private View rootView;
     private Cursor mCursor;
+    private GridView mGridView;
 
     public MoviesFragment() {
     }
@@ -91,7 +95,7 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        closeCursorIfNecessary();
+//        closeCursorIfNecessary();
 
         Log.v(LOG_TAG, "*** In OnPause()");
     }
@@ -123,6 +127,8 @@ public class MoviesFragment extends Fragment {
 
         rootView = inflater.inflate(R.layout.movie_fragment, container, false);
 
+        mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
+
         // TODO  MAke Sure these don't fail when there's no data nd no network
         moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
         moviesCursorAdapter = new MoviesCursorAdapter(getActivity(),
@@ -131,9 +137,9 @@ public class MoviesFragment extends Fragment {
         //   Then, attach whichever one the prefs designate
         String dataSource = getDataSource();
         if(dataSource.equals("network")) {
-            attachMoviesAdapterToGridView();
+            mGridView.setAdapter(moviesAdapter);
         } else {
-            attachMoviesCursorAdapterToGridView();
+            mGridView.setAdapter(moviesCursorAdapter);
         }
 
         return rootView;
@@ -146,17 +152,27 @@ public class MoviesFragment extends Fragment {
         Log.v(LOG_TAG, "*** Entering OnStart()");
 
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Log.v(LOG_TAG, "*** Entering OnResume()");
+
         // TODO  - Switch which adapter the gridview is attached to when prefs change
         if(getDataSource().equals("network")) {
             getFirstPageOfMovies();
-            attachMoviesAdapterToGridView();
+            mGridView.setAdapter(moviesAdapter);
         }
         else {  //
             moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
-            attachMoviesCursorAdapterToGridView();
+            mGridView.setAdapter(moviesCursorAdapter);
         }
-    }
+        setMovieItemClickListener(mGridView);
+        setUpMovieGridviewEndlessScrolling(mGridView);
 
+    }
 
     public void getFirstPageOfMovies() {
         morePagesOfMoviesLeftToGet = true;  // New data set on startup and on prefs changing
@@ -168,18 +184,6 @@ public class MoviesFragment extends Fragment {
 
     }
 
-    private void attachMoviesAdapterToGridView() {
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-        gridView.setAdapter(moviesAdapter);
-        setMovieItemClickListener(gridView);
-        setUpMovieGridviewEndlessScrolling(gridView);
-    }
-
-    private void attachMoviesCursorAdapterToGridView() {
-        // TODO Get Click Listener Working
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-        gridView.setAdapter(moviesCursorAdapter);
-    }
 
     private Cursor getCursorWithCurrentPreferences() {
 
@@ -260,7 +264,8 @@ public class MoviesFragment extends Fragment {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                getAnotherPageOfMoviesIfNeeded(firstVisibleItem, visibleItemCount, totalItemCount);
+                if(getDataSource().equals("network"))
+                    getAnotherPageOfMoviesIfNeeded(firstVisibleItem, visibleItemCount, totalItemCount);
             }
         });
     }
@@ -274,23 +279,87 @@ public class MoviesFragment extends Fragment {
     }
 
     private void startMovieDetailsActivity(int position) {
-        MoviesResponse.ResultsEntity movie = moviesAdapter.getItem(position);
+
+        MoviesResponse.ResultsEntity movie;
+        if(getDataSource().equals("network")) {
+            movie = moviesAdapter.getItem(position);
+        }
+        else {
+            movie = getMovieFromCursor(position);
+        }
         Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
         intent.putExtra("movie", movie);
         startActivity(intent);
     }
 
+    private MoviesResponse.ResultsEntity getMovieFromCursor(int position) {
+
+        Cursor cursor = moviesCursorAdapter.getCursor();
+
+        MoviesResponse.ResultsEntity movie = new MoviesResponse.ResultsEntity(
+                false,  // adult
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH)),
+                getGenreIdsAsInegerArrayList(
+                        cursor.getString(cursor.getColumnIndex(
+                                MovieEntry.COLUMN_GENRE_IDS))),
+                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_LANGUAGE)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW)),
+                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_POPULARITY)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_PATH)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE)),
+                true, // video
+                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE)),
+                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_COUNT))
+        );
+
+
+//        cursor.close();   // Nope, still in use.
+
+
+        return movie;
+    }
+
+
+    public ArrayList<Integer> getGenreIdsAsInegerArrayList(String genreIds) {
+
+        if(genreIds != null) {
+            String[] strArray = genreIds
+                    .replace("[", "").replace("]", "").replaceAll("\\s+","")
+                    .split(",");
+            ArrayList<Integer> intArrayList = new ArrayList<Integer>(strArray.length);
+            for (String i : strArray) {
+                intArrayList.add( Integer.parseInt(i));
+            }
+
+            return intArrayList;
+        }
+        else
+            return null;
+    }
+
+
     private boolean shouldWeFetchMoreMovies(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
         int last = firstVisibleItem + visibleItemCount;
 
-//        Log.v(LOG_TAG,
-//                "firstVisibleItem: " + firstVisibleItem + ",  " +
-//                "visibleItemCount: " + visibleItemCount + ",  " +
-//                "totalItemCount: " + totalItemCount + ",  " +
-//                "last: " + last + ",  "
-//                );
-//
+        if(currentPage > 1 &&
+                visibleItemCount != 0
+                && ( (visibleItemCount + firstVisibleItem) == totalItemCount
+                && totalItemCount == last
+                && last == visibleItemCount ))
+            return false;
+
+
+        Log.v(LOG_TAG,
+                "firstVisibleItem: " + firstVisibleItem + ",  " +
+                "visibleItemCount: " + visibleItemCount + ",  " +
+                "totalItemCount: " + totalItemCount + ",  " +
+                "last: " + last + ",  "
+                );
+
 
         return (last == totalItemCount) &&   // We've scrolled past the end of the grid view
                 !currentlyFetchingMovies &&        // We're not trying to grab movies already with
@@ -364,13 +433,13 @@ public class MoviesFragment extends Fragment {
         String fullPosterPathUrl =
                 getContext().getString(R.string.tmdb_base_image_url) + getContext().getString(R.string.tmdb_image_size_185) + mr.getPoster_path();
 
-        final Target target;
+        // final Target target;
         Picasso.with(getActivity())
                 .load(fullPosterPathUrl)
-                .into(target = new Target() {
+                .into(new Target() {
 
                 @Override
-                public void onBitmapLoaded (final Bitmap bitmap, Picasso.LoadedFrom from){
+                public void onBitmapLoaded (Bitmap bitmap, Picasso.LoadedFrom from){
                     byte[] imageBytes = getBitmapAsByteArray(bitmap);
                     insertMovieIntoDB(imageBytes, movieValues, mr);
                 }
@@ -416,7 +485,7 @@ public class MoviesFragment extends Fragment {
         getContext().getContentResolver().insert(
                 MovieEntry.CONTENT_URI, movieValues);
 
-        Log.v(LOG_TAG, "*** Downloaded Bitmap Successfully and inserted it");
+//        Log.v(LOG_TAG, "*** Downloaded Bitmap Successfully and inserted it");
     }
 
     public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
