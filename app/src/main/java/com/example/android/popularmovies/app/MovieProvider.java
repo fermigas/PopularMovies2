@@ -17,51 +17,6 @@ import java.util.List;
 import static com.example.android.popularmovies.app.MoviesContract.CONTENT_AUTHORITY;
 
 
-//  URISs to support
-//
-//  For Main Movie List
-//  CONTENT://com.example.android.popularmovies.app/movie/?which_movies=
-//              [all|favorite_movies|watched|watchme]
-//  CONTENT://com.example.android.popularmovies.app/movie/?sort_order=
-//              [none|vote_count|vote_average|release_date|alphabetically]
-//  CONTENT://com.example.android.popularmovies.app/movie/?vote_count=
-//              []
-//  CONTENT://com.example.android.popularmovies.app/movie/?time_period=
-//              []
-//  CONTENT://com.example.android.popularmovies.app/movie/?genre_filters=
-//              []
-//
-//   For Movie Details
-//  CONTENT://com.example.android.popularmovies.app/movie/[movie_id]
-//  CONTENT://com.example.android.popularmovies.app/movie/[movie_id]/trailer
-//  CONTENT://com.example.android.popularmovies.app/movie/[movie_id]/review
-
-//  Queries
-//      SELECT
-//         Movies
-//      WHERE
-//          Favorite = true:  only favorites
-//          Favorite = false: tmdb movies (online data)
-//          Later:  All movies, Watched, Watch_me
-//      ORDER BY:
-//      All | Favorite | Watched | Watch ME movies, no sorting or filtering at all
-//             ""  sorted by Most Popular:  vote_count DESC
-//             ""  sorted by Highest Rated: vote_average DESC
-//             ""  sorted by Latest Releases: release_date DESC
-//             ""  sorted by Highest Grossing:  need to add field for this, or cut it
-//             ""  sorted by Primary Releases, Newest First:  primary_release_date DESC
-//             ""  sorted by Primary Releases, Oldest First:  primary_release_date ASC
-//             ""  sorted Alphabetically: title ASC
-
-
-//  Inserts
-//      Movie
-//          Movie Poster Image
-//
-
-//  Deletes
-//      Everything from all 4 tables to begin with;  get more granular later
-
 public class MovieProvider extends ContentProvider {
 
     public static final String LOG_TAG = MovieProvider.class.getSimpleName();

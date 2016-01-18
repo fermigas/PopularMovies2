@@ -25,7 +25,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.IntegerRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -50,9 +49,7 @@ import org.apache.http.Header;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public class MoviesFragment extends Fragment {
 
@@ -92,13 +89,6 @@ public class MoviesFragment extends Fragment {
         setHasOptionsMenu(true);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-//        closeCursorIfNecessary();
-
-        Log.v(LOG_TAG, "*** In OnPause()");
-    }
 
     @Override
     public void onSaveInstanceState(Bundle outstate){
@@ -124,15 +114,16 @@ public class MoviesFragment extends Fragment {
         Log.v(LOG_TAG, "*** Entering OnCreateView()");
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
         rootView = inflater.inflate(R.layout.movie_fragment, container, false);
-
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
 
         // TODO  MAke Sure these don't fail when there's no data nd no network
         moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
-        moviesCursorAdapter = new MoviesCursorAdapter(getActivity(),
-                getCursorWithCurrentPreferences(), 0);
+
+        Cursor cursor = getCursorWithCurrentPreferences();
+        if(cursor != null)
+            mCursor = cursor;
+        moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor , 0);
 
         //   Then, attach whichever one the prefs designate
         String dataSource = getDataSource();
@@ -160,12 +151,15 @@ public class MoviesFragment extends Fragment {
 
         Log.v(LOG_TAG, "*** Entering OnResume()");
 
-        // TODO  - Switch which adapter the gridview is attached to when prefs change
+
         if(getDataSource().equals("network")) {
             getFirstPageOfMovies();
             mGridView.setAdapter(moviesAdapter);
+            closeCursorIfNecessary(mCursor);
+            moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
         }
         else {  //
+            closeCursorIfNecessary(mCursor);
             moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
             mGridView.setAdapter(moviesCursorAdapter);
         }
@@ -173,6 +167,16 @@ public class MoviesFragment extends Fragment {
         setUpMovieGridviewEndlessScrolling(mGridView);
 
     }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        closeCursorIfNecessary(mCursor);
+
+        Log.v(LOG_TAG, "*** In OnPause()");
+    }
+
 
     public void getFirstPageOfMovies() {
         morePagesOfMoviesLeftToGet = true;  // New data set on startup and on prefs changing
@@ -189,28 +193,26 @@ public class MoviesFragment extends Fragment {
 
         Uri uri = getUriFromPreferences();
 
-        closeCursorIfNecessary();
+        Cursor cursor;
 
+        try {
 
-        mCursor = getActivity().getContentResolver().query(
-                uri,
-                null, null, null, null );
+            cursor = getActivity().getContentResolver().query(
+                    uri, null, null, null, null);
 
+//        String cursorContents = DatabaseUtils.dumpCursorToString(cursor);
+//        Log.v(LOG_TAG, cursorContents);
+        }
+        catch ( Exception e ){
+            return null;
+        }
 
-        // TODO remove this, move first instead
-        String cursorContents = DatabaseUtils.dumpCursorToString(mCursor);
-        Log.v(LOG_TAG, cursorContents);
-
-        // mCursor.moveToFirst();
-
-        return mCursor;
-
+        return cursor;
     }
 
-    private void closeCursorIfNecessary() {
-        // TODO:  close cursor
-        if(mCursor != null && !mCursor.isClosed() )
-            mCursor.close();
+    private void closeCursorIfNecessary(Cursor cursor) {
+        if(cursor != null && !cursor.isClosed() )
+            cursor.close();
     }
 
     private Uri getUriFromPreferences() {
@@ -371,7 +373,7 @@ public class MoviesFragment extends Fragment {
     private void fetchMovies(int currentPage) {
 
         fetchMoviesFromWeb(currentPage);
-        stashMoviesInDatabase();
+        insertOrUpdateMovies();
 
     }
 
@@ -381,10 +383,66 @@ public class MoviesFragment extends Fragment {
                 getActivity().getString(R.string.pref_data_source_key), "network");
     }
 
-    private void stashMoviesInDatabase() {
+    private void insertOrUpdateMovies() {
         if(!moviesResultsEntity.isEmpty())
-            for (MoviesResponse.ResultsEntity mr : moviesResultsEntity)
-                addMovieToDb(mr);
+            for (MoviesResponse.ResultsEntity mr : moviesResultsEntity) {
+                if(!isMovieAlreadyInDb(mr))
+                    addMovieToDb(mr);
+                else
+                    updateMovie(mr);
+            }
+    }
+
+    private void updateMovie(MoviesResponse.ResultsEntity mr) {
+
+        // These values change at least daily, especially for popular movies
+        final ContentValues movieValues = new ContentValues();
+        movieValues.put(MovieEntry.COLUMN_POPULARITY, mr.getPopularity());
+        movieValues.put(MovieEntry.COLUMN_VOTE_COUNT, mr.getVote_count());
+        movieValues.put(MovieEntry.COLUMN_VOTE_AVERAGE, mr.getVote_average());
+
+        String selection = MovieEntry.COLUMN_MOVIE_ID + " = ? ";
+        String[] selectionArgs = new String[]{String.valueOf(mr.getId())};
+
+        getContext().getContentResolver().update(
+                MovieEntry.CONTENT_URI,
+                movieValues,
+                selection, selectionArgs
+        );
+
+    }
+
+    private boolean isMovieAlreadyInDb(MoviesResponse.ResultsEntity mr) {
+
+        Cursor cursor = null;
+
+        try {
+
+            String selection = MovieEntry.COLUMN_MOVIE_ID + " = ? ";
+            String[] selectionArgs = new String[]{String.valueOf(mr.getId())};
+
+            cursor = getContext().getContentResolver().query(
+                    MovieEntry.CONTENT_URI,
+                    null, selection, selectionArgs, null
+            );
+
+            if (cursor != null && cursor.getCount() == 1) {
+                cursor.moveToFirst();
+                if (mr.getId() == cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)))
+                    return true;
+            }
+         }
+        catch (Exception e) {
+            Log.v(LOG_TAG, " ***  Failed getting cursor when checking to see " +
+                    "if the movies is already in the database." );
+        }
+        finally {
+            if(cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return false;
     }
 
 
