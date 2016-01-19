@@ -26,6 +26,7 @@ public class MovieProvider extends ContentProvider {
 
     static final int MOVIES = 100;
     static final int MOVIES_WITH_QUERY_STRING = 101;
+    static final int TRAILERS = 200;
     static final int TRAILERS_BY_MOVIE_ID = 201;
     static final int REVIEWS_BY_MOVIE_ID = 301;
 
@@ -52,6 +53,10 @@ public class MovieProvider extends ContentProvider {
 
             case MOVIES: {
                 retCursor = getMovies(uri, projection, selection, selectionArgs, sortOrder);
+                break;
+            }
+            case TRAILERS: {
+                retCursor = getTrailers(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
             case MOVIES_WITH_QUERY_STRING: {
@@ -102,6 +107,22 @@ public class MovieProvider extends ContentProvider {
 
     }
 
+    private Cursor getTrailers(Uri uri, String[] projection, String selection,
+                             String[] selectionArgs, String sortOrder) {
+
+        return mOpenHelper.getReadableDatabase().query(
+                MoviesContract.TrailerEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+
+    }
+
+
     @Nullable
     @Override
     public String getType(Uri uri) {
@@ -111,6 +132,9 @@ public class MovieProvider extends ContentProvider {
         switch (match){
 
             case MOVIES:
+                return MoviesContract.MovieEntry.CONTENT_TYPE;
+
+            case TRAILERS:
                 return MoviesContract.MovieEntry.CONTENT_TYPE;
 
             case MOVIES_WITH_QUERY_STRING:
@@ -130,13 +154,22 @@ public class MovieProvider extends ContentProvider {
         Uri returnUri;
 
         switch (match){
-            case MOVIES:
+            case MOVIES: {
                 long _id = db.insert(MoviesContract.MovieEntry.TABLE_NAME, null, values);
-                if(_id > 0)
+                if (_id > 0)
                     returnUri = MoviesContract.MovieEntry.buildMovieUri(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
+            }
+            case TRAILERS: {
+                long _id = db.insert(MoviesContract.TrailerEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = MoviesContract.TrailerEntry.buildTrailerUri(_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
 
@@ -158,6 +191,12 @@ public class MovieProvider extends ContentProvider {
                 rowsDeleted = db.delete(MoviesContract.MovieEntry.TABLE_NAME,
                         selection, selectionArgs);
                 break;
+
+            case TRAILERS:
+                rowsDeleted = db.delete(MoviesContract.TrailerEntry.TABLE_NAME,
+                        selection, selectionArgs);
+                break;
+
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -177,6 +216,10 @@ public class MovieProvider extends ContentProvider {
         switch (match) {
             case MOVIES:
                 rowsUpdated = db.update(MoviesContract.MovieEntry.TABLE_NAME, values, selection,
+                                    selectionArgs);
+                   break;
+            case TRAILERS:
+                rowsUpdated = db.update(MoviesContract.TrailerEntry.TABLE_NAME, values, selection,
                                     selectionArgs);
                    break;
             default:
@@ -199,6 +242,7 @@ public class MovieProvider extends ContentProvider {
         // 2) Use the addURI function to match each of the types.  Use the constants from
         // WeatherContract to help define the types to the UriMatcher.
         matcher.addURI(authority, MoviesContract.PATH_MOVIE, MOVIES);
+        matcher.addURI(authority, MoviesContract.PATH_TRAILER, TRAILERS);
 
         // TODO match /movies + querystring
         matcher.addURI(authority, MoviesContract.PATH_MOVIE + "/*", MOVIES_WITH_QUERY_STRING);
@@ -213,7 +257,7 @@ public class MovieProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case MOVIES:
+            case MOVIES: {
                 db.beginTransaction();
                 int returnCount = 0;
                 try {
@@ -229,6 +273,24 @@ public class MovieProvider extends ContentProvider {
                 }
                 getContext().getContentResolver().notifyChange(uri, null);
                 return returnCount;
+            }
+            case TRAILERS: {
+                db.beginTransaction();
+                int returnCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(MoviesContract.TrailerEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnCount;
+            }
             default:
                 return super.bulkInsert(uri, values);
         }
