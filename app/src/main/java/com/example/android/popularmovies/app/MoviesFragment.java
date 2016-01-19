@@ -75,12 +75,8 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Log.v(LOG_TAG, "*** Entering OnCreate()");
-
         setHasOptionsMenu(true);
     }
-
 
     @Override
     public void onSaveInstanceState(Bundle outstate){
@@ -102,8 +98,6 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Log.v(LOG_TAG, "*** Entering OnCreateView()");
-
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         rootView = inflater.inflate(R.layout.movie_fragment, container, false);
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
@@ -117,73 +111,54 @@ public class MoviesFragment extends Fragment {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-
-        Log.v(LOG_TAG, "*** Entering OnStart()");
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-//        closeCursorIfNecessary(mCursor);
-
-        Log.v(LOG_TAG, "*** In OnPause()");
-
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
-
-        Log.v(LOG_TAG, "*** Entering OnResume()");
 
         if (getDataSource().equals("network")) {
             getFirstPageOfMovies();
         }
+        else{  // Because settings might have changed
+            reattachGridViewCursorAdapter();
+        }
 
     }
 
+    private void reattachGridViewCursorAdapter() {
+        Cursor cursor = getCursorWithCurrentPreferences();
+        if(cursor != null)
+            cursor.moveToFirst();
+        moviesCursorAdapter.changeCursor(cursor);
+        moviesCursorAdapter.notifyDataSetChanged();
+        setMovieItemClickListener(mGridView);
+        setUpMovieGridviewEndlessScrolling(mGridView);
+        currentlyFetchingMovies = false;
+    }
 
     public void getFirstPageOfMovies() {
         morePagesOfMoviesLeftToGet = true;  // New data set on startup and on prefs changing
-
         currentPage = 1;        // This is only called on startup, or when prefs change
         fetchMoviesFromWeb(currentPage);
         currentPage += 1;
-
     }
-
 
     private Cursor getCursorWithCurrentPreferences() {
 
         Uri uri = getUriFromPreferences();
-
         Cursor cursor;
-
         try {
-
-            cursor = getActivity().getContentResolver().query(
-                    uri, null, null, null, null);
+            cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
             if(cursor != null ) {
                 cursor.moveToLast();
-                String cursorContents = DatabaseUtils.dumpCurrentRowToString(cursor);
-                Log.v(LOG_TAG, cursorContents);
+//                String cursorContents = DatabaseUtils.dumpCurrentRowToString(cursor);
+//                Log.v(LOG_TAG, cursorContents);
                 cursor.moveToFirst();
             }
         }
-        catch ( Exception e ){
-            return null;
-        }
+        catch ( Exception e ){ return null; }
 
         return cursor;
     }
 
-    private void closeCursorIfNecessary(Cursor cursor) {
-        if(cursor != null && !cursor.isClosed() )
-            cursor.close();
-    }
 
     private Uri getUriFromPreferences() {
 
@@ -198,7 +173,6 @@ public class MoviesFragment extends Fragment {
         String sortOrder = prefs.getString(getActivity().getString(R.string.pref_sort_order_key), "none");
 
         String[] values = {  dataSource, voteCount, timePeriods, genreIds, sortOrder };
-
 
         Uri uri = MoviesContract.MovieEntry.buildMoviesUriWithQueryParameters(
                 MovieEntry.CONTENT_URI, keys, values
@@ -255,19 +229,6 @@ public class MoviesFragment extends Fragment {
 
         int last = firstVisibleItem + visibleItemCount;
 
-        Log.v(LOG_TAG,
-                "currentPage: " + currentPage + ",  " +
-                        "firstVisibleItem: " + firstVisibleItem + ",  " +
-                        "visibleItemCount: " + visibleItemCount + ",  " +
-                        "totalItemCount: " + totalItemCount + ",  " +
-                        "last: " + last + ",  " +
-                        "morePagesOfMoviesLeftToGet: " + morePagesOfMoviesLeftToGet + ",  " +
-                        "currentlyFetchingMovies: " + currentlyFetchingMovies + ",  " +
-                        "(last == totalItemCount): " + (last == totalItemCount) + ",  "
-        );
-
-        if(visibleItemCount < 16)
-            return  false;
 
         if(currentPage > 1 &&
                 visibleItemCount != 0
@@ -276,8 +237,6 @@ public class MoviesFragment extends Fragment {
                 && last == visibleItemCount ))
             return false;
 
-//        if(firstVisibleItem == 0)
-//            return false;
 
         return (last == totalItemCount) &&   // We've scrolled past the end of the grid view
                 !currentlyFetchingMovies &&        // We're not trying to grab movies already with
@@ -366,8 +325,6 @@ public class MoviesFragment extends Fragment {
 
         ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(isLastResult);
 
-        Log.v(LOG_TAG, "*** Updating Movie");
-
     }
 
     private boolean isMovieAlreadyInDb(MoviesResponse.ResultsEntity mr) {
@@ -385,27 +342,18 @@ public class MoviesFragment extends Fragment {
             );
 
             if (cursor != null && cursor.getCount() == 1) {
-                Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: Movie is already in db.  Returning True." );
                 return true;
             }
             else {
-                Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: Movie is NOT in db..");
             }
         }
         catch (Exception e) {
-            Log.v(LOG_TAG, " ***  Failed getting cursor when checking to see " +
-                    "if the movies is already in the database." );
         }
         finally {
             if(cursor != null) {
                 cursor.close();
-                Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: " +
-                        "Closing Cursor" );
             }
         }
-
-        Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: " +
-                "returning false.." );
 
         return false;
     }
@@ -437,8 +385,9 @@ public class MoviesFragment extends Fragment {
 
 
     private int insertOrUpdateMovies(MoviesResponse moviesResponse) {
+        int totalResults = 0;  // Assume no results left to get
         if(!moviesResponse.getResults().isEmpty() ) {
-            int totalResults = moviesResponse.getResults().size();
+            totalResults = moviesResponse.getResults().size();
             int resultsProcessed = 0;
             for (MoviesResponse.ResultsEntity mr : moviesResponse.getResults()) {
                 resultsProcessed++;
@@ -451,8 +400,7 @@ public class MoviesFragment extends Fragment {
             }
         }
 
-
-        return moviesResponse.getResults().size();
+        return totalResults;
     }
 
 
@@ -466,9 +414,6 @@ public class MoviesFragment extends Fragment {
 
         String fullPosterPathUrl =
                 getContext().getString(R.string.tmdb_base_image_url) + getContext().getString(R.string.tmdb_image_size_185) + mr.getPoster_path();
-
-        Log.v(LOG_TAG, "*** Entering addMovieToDb.  Loading: " + fullPosterPathUrl
-                + "  "  + mr.getTitle() );
 
         Target bitmapTarget = new BitmapTarget(mr, isLastResult);
         targetHashSet.add(bitmapTarget);
@@ -490,43 +435,26 @@ public class MoviesFragment extends Fragment {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
 
-            Log.v(LOG_TAG, "*** Entering bitmapLoaded");
             byte[] imageBytes = getBitmapAsByteArray(bitmap);
             insertMovieIntoDB(imageBytes, mMr);
             ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(mIsLastResult);
             targetHashSet.remove(this);
         }
 
-
-
         @Override
         public void onBitmapFailed(Drawable drawable) {
-            Log.v(LOG_TAG, "*** Failed to Download Bitmap");
             targetHashSet.remove(this);
         }
 
         @Override
         public void onPrepareLoad(Drawable drawable) {
-            Log.v(LOG_TAG, "*** Picasso onPrepareLoad  ");
         }
     }
 
     private void ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(boolean isLastResult ) {
 
         if(isLastResult) { // Change cursor after last result from a page has been downloaded
-
-            Cursor cursor = getCursorWithCurrentPreferences();
-            if(cursor != null)
-                cursor.moveToFirst();
-            moviesCursorAdapter.changeCursor(cursor);
-            moviesCursorAdapter.notifyDataSetChanged();
-
-            Log.v(LOG_TAG, "*** Swapped cursor after inserting or updating movies.");
-
-            setMovieItemClickListener(mGridView);
-            setUpMovieGridviewEndlessScrolling(mGridView);
-
-            currentlyFetchingMovies = false;
+            reattachGridViewCursorAdapter();
         }
 
     }
@@ -549,18 +477,13 @@ public class MoviesFragment extends Fragment {
         movieValues.put(MovieEntry.COLUMN_VIDEO, mr.isVideo());
         movieValues.put(MovieEntry.COLUMN_VOTE_AVERAGE, mr.getVote_average());
         movieValues.put(MovieEntry.COLUMN_GENRE_IDS, mr.getGenre_ids().toString());
-
         /*  These are initial values, all set to zero  */
         movieValues.put(MovieEntry.COLUMN_FAVORITE, 0);
         movieValues.put(MovieEntry.COLUMN_WATCHED, 0);
         movieValues.put(MovieEntry.COLUMN_WATCH_ME, 0);
-
         movieValues.put(MovieEntry.COLUMN_POSTER_BITMAP, imageBytes);
 
-        getContext().getContentResolver().insert(
-                MovieEntry.CONTENT_URI, movieValues);
-
-       Log.v(LOG_TAG, "*** Downloaded Bitmap Successfully and inserted it");
+        getContext().getContentResolver().insert( MovieEntry.CONTENT_URI, movieValues);
     }
 
     public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
