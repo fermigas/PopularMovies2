@@ -32,35 +32,37 @@ public class TestProvider  extends AndroidTestCase {
 
     public void deleteAllRecordsFromProvider() {
 
-//        mContext.getContentResolver().delete(
-//                ReviewEntry.CONTENT_URI,
-//                null,
-//                null
-//        );
+        mContext.getContentResolver().delete(
+                ReviewEntry.CONTENT_URI,
+                null,
+                null
+        );
 
         mContext.getContentResolver().delete( TrailerEntry.CONTENT_URI, null, null );
 
         mContext.getContentResolver().delete( MovieEntry.CONTENT_URI, null, null );
 
-//        Cursor cursor = mContext.getContentResolver().query(
-//                ReviewEntry.CONTENT_URI,
-//                null,
-//                null,
-//                null,
-//                null
-//        );
-//        assertEquals("Error: Records not deleted from Review table during delete", 0, cursor.getCount());
-//        cursor.close();
-//
-        Cursor cursor = mContext.getContentResolver().query( TrailerEntry.CONTENT_URI,
+        Cursor cursor = mContext.getContentResolver().query(
+                ReviewEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+        assertEquals("Error: Records not deleted from Review table during delete", 0,
+                cursor.getCount());
+        cursor.close();
+
+
+        cursor = mContext.getContentResolver().query( TrailerEntry.CONTENT_URI,
                 null, null, null, null );
         assertEquals("Error: Records not deleted from Trailer table during delete", 0,
                 cursor.getCount());
         cursor.close();
 
+
         cursor = mContext.getContentResolver().query( MovieEntry.CONTENT_URI,
                 null, null, null, null );
-
         if(cursor != null) {
             assertEquals("Error: Records not deleted from Movie table during delete", 0,
                     cursor.getCount());
@@ -164,6 +166,25 @@ public class TestProvider  extends AndroidTestCase {
                  trailerCursor, TrailerValues);
          if(trailerCursor != null)
              trailerCursor.close();
+
+         /** Insert a review and wait to be notified of it  ***/
+         ContentValues ReviewValues = TestUtilities.createReviewValues();
+         tco = TestUtilities.getTestContentObserver();
+         mContext.getContentResolver().registerContentObserver(ReviewEntry.CONTENT_URI, true, tco);
+         Uri ReviewInsertUri = mContext.getContentResolver()
+                 .insert(ReviewEntry.CONTENT_URI, ReviewValues);
+         assertTrue(ReviewInsertUri != null);
+         tco.waitForNotificationOrFail();
+         mContext.getContentResolver().unregisterContentObserver(tco);
+         // Insure it's there by querying for it
+         Cursor reviewCursor = mContext.getContentResolver().query(
+                 ReviewEntry.CONTENT_URI, null,  null,  null, null
+         );
+         // Validate it
+         TestUtilities.validateCursor("testInsertReadProvider. Error validating ReviewEntry insert.",
+                 reviewCursor, ReviewValues);
+         if(reviewCursor != null)
+             reviewCursor.close();
 
      }
 

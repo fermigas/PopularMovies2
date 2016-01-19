@@ -27,6 +27,7 @@ public class MovieProvider extends ContentProvider {
     static final int MOVIES = 100;
     static final int MOVIES_WITH_QUERY_STRING = 101;
     static final int TRAILERS = 200;
+    static final int REVIEWS = 300;
     static final int TRAILERS_BY_MOVIE_ID = 201;
     static final int REVIEWS_BY_MOVIE_ID = 301;
 
@@ -57,6 +58,10 @@ public class MovieProvider extends ContentProvider {
             }
             case TRAILERS: {
                 retCursor = getTrailers(uri, projection, selection, selectionArgs, sortOrder);
+                break;
+            }
+            case REVIEWS: {
+                retCursor = getReviews(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
             case MOVIES_WITH_QUERY_STRING: {
@@ -121,6 +126,20 @@ public class MovieProvider extends ContentProvider {
         );
 
     }
+    private Cursor getReviews(Uri uri, String[] projection, String selection,
+                             String[] selectionArgs, String sortOrder) {
+
+        return mOpenHelper.getReadableDatabase().query(
+                MoviesContract.ReviewEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+
+    }
 
 
     @Nullable
@@ -135,7 +154,10 @@ public class MovieProvider extends ContentProvider {
                 return MoviesContract.MovieEntry.CONTENT_TYPE;
 
             case TRAILERS:
-                return MoviesContract.MovieEntry.CONTENT_TYPE;
+                return MoviesContract.TrailerEntry.CONTENT_TYPE;
+
+            case REVIEWS:
+                return MoviesContract.ReviewEntry.CONTENT_TYPE;
 
             case MOVIES_WITH_QUERY_STRING:
                 return MoviesContract.MovieEntry.CONTENT_TYPE;
@@ -170,6 +192,14 @@ public class MovieProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case REVIEWS: {
+                long _id = db.insert(MoviesContract.ReviewEntry.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = MoviesContract.ReviewEntry.buildReviewUri (_id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
 
@@ -194,6 +224,11 @@ public class MovieProvider extends ContentProvider {
 
             case TRAILERS:
                 rowsDeleted = db.delete(MoviesContract.TrailerEntry.TABLE_NAME,
+                        selection, selectionArgs);
+                break;
+
+            case REVIEWS:
+                rowsDeleted = db.delete(MoviesContract.ReviewEntry.TABLE_NAME,
                         selection, selectionArgs);
                 break;
 
@@ -222,6 +257,10 @@ public class MovieProvider extends ContentProvider {
                 rowsUpdated = db.update(MoviesContract.TrailerEntry.TABLE_NAME, values, selection,
                                     selectionArgs);
                    break;
+            case REVIEWS:
+                rowsUpdated = db.update(MoviesContract.ReviewEntry.TABLE_NAME, values, selection,
+                                    selectionArgs);
+                   break;
             default:
                     throw new UnsupportedOperationException("Unknown uri: " + uri);
             }
@@ -233,22 +272,16 @@ public class MovieProvider extends ContentProvider {
 
 
     static UriMatcher buildUriMatcher() {
-        // 1) The code passed into the constructor represents the code to return for the root
-        // URI.  It's common to use NO_MATCH as the code for this case. Add the constructor below.
+
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = CONTENT_AUTHORITY;
 
-
-        // 2) Use the addURI function to match each of the types.  Use the constants from
-        // WeatherContract to help define the types to the UriMatcher.
         matcher.addURI(authority, MoviesContract.PATH_MOVIE, MOVIES);
         matcher.addURI(authority, MoviesContract.PATH_TRAILER, TRAILERS);
+        matcher.addURI(authority, MoviesContract.PATH_REVIEW, REVIEWS);
 
-        // TODO match /movies + querystring
         matcher.addURI(authority, MoviesContract.PATH_MOVIE + "/*", MOVIES_WITH_QUERY_STRING);
 
-
-        // 3) Return the new matcher!
         return matcher;
     }
 
@@ -280,6 +313,23 @@ public class MovieProvider extends ContentProvider {
                 try {
                     for (ContentValues value : values) {
                         long _id = db.insert(MoviesContract.TrailerEntry.TABLE_NAME, null, value);
+                        if (_id != -1) {
+                            returnCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return returnCount;
+            }
+            case REVIEWS: {
+                db.beginTransaction();
+                int returnCount = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = db.insert(MoviesContract.ReviewEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
                         }

@@ -85,7 +85,7 @@ public class MoviesContract {
 
         public static final String COLUMN_REVIEW_ID = "review_id";
         public static final String COLUMN_AUTHOR = "author";
-        public static final String COLUMN_CONTENT = "content";
+        public static final String COLUMN_CONTENT = "review_content";
         public static final String COLUMN_URL = "url";
 
 
