@@ -49,6 +49,7 @@ import org.apache.http.Header;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 public class MoviesFragment extends Fragment {
@@ -59,14 +60,14 @@ public class MoviesFragment extends Fragment {
     private Boolean currentlyFetchingMovies = true;
 
     private Boolean morePagesOfMoviesLeftToGet = true;
-//    private ArrayList<MoviesResponse.ResultsEntity> moviesResultsEntity;
-//    private MoviesAdapter moviesAdapter;
 
     private MoviesCursorAdapter moviesCursorAdapter;
     SharedPreferences prefs;
     private View rootView;
-    private Cursor mCursor;
     private GridView mGridView;
+    private Target target;
+
+    final Set<Target> targetHashSet = new HashSet<>();
 
     public MoviesFragment() {
     }
@@ -77,22 +78,12 @@ public class MoviesFragment extends Fragment {
 
         Log.v(LOG_TAG, "*** Entering OnCreate()");
 
-
-        // TODO  -- this only saves network data;  we need to save cache/favorites, too?
-           // Maybe not, it's just grabbed from the database
-//        if(savedInstanceState == null || !savedInstanceState.containsKey("movies"))
-//            moviesResultsEntity = new ArrayList<MoviesResponse.ResultsEntity>();
-//        else
-//            moviesResultsEntity = savedInstanceState.getParcelableArrayList("movies");
-
-
         setHasOptionsMenu(true);
     }
 
 
     @Override
     public void onSaveInstanceState(Bundle outstate){
-//        outstate.putParcelableArrayList("movies", moviesResultsEntity);
         super.onSaveInstanceState(outstate);
     }
 
@@ -117,23 +108,11 @@ public class MoviesFragment extends Fragment {
         rootView = inflater.inflate(R.layout.movie_fragment, container, false);
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
 
-        // TODO  MAke Sure these don't fail when there's no data nd no network
-//        moviesAdapter =  new MoviesAdapter( getActivity(), moviesResultsEntity);
-
         Cursor cursor = getCursorWithCurrentPreferences();
-        if(cursor != null)
-            mCursor = cursor;
         moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor , 0);
-
-        //   Then, attach whichever one the prefs designate
-//        String dataSource = getDataSource();
-//        if(dataSource.equals("network")) {
-//            mGridView.setAdapter(moviesAdapter);
-//        } else {
-//            mGridView.setAdapter(moviesCursorAdapter);
-//        }
-
         mGridView.setAdapter(moviesCursorAdapter);
+        setMovieItemClickListener(mGridView);
+        setUpMovieGridviewEndlessScrolling(mGridView);
         return rootView;
     }
 
@@ -143,6 +122,14 @@ public class MoviesFragment extends Fragment {
 
         Log.v(LOG_TAG, "*** Entering OnStart()");
 
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+//        closeCursorIfNecessary(mCursor);
+
+        Log.v(LOG_TAG, "*** In OnPause()");
 
     }
 
@@ -152,40 +139,18 @@ public class MoviesFragment extends Fragment {
 
         Log.v(LOG_TAG, "*** Entering OnResume()");
 
-
-        if(getDataSource().equals("network")) {
+        if (getDataSource().equals("network")) {
             getFirstPageOfMovies();
-//            mGridView.setAdapter(moviesAdapter);
-//            closeCursorIfNecessary(mCursor);
-//            moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
         }
 
-//        else {  //
-            closeCursorIfNecessary(mCursor);
-            moviesCursorAdapter.swapCursor(getCursorWithCurrentPreferences());
-            mGridView.setAdapter(moviesCursorAdapter);
- //       }
-        setMovieItemClickListener(mGridView);
-        setUpMovieGridviewEndlessScrolling(mGridView);
-
-    }
-
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        closeCursorIfNecessary(mCursor);
-
-        Log.v(LOG_TAG, "*** In OnPause()");
     }
 
 
     public void getFirstPageOfMovies() {
         morePagesOfMoviesLeftToGet = true;  // New data set on startup and on prefs changing
-//        moviesAdapter.clear();  // Must do this when prefs change
 
         currentPage = 1;        // This is only called on startup, or when prefs change
-        fetchMovies(currentPage);
+        fetchMoviesFromWeb(currentPage);
         currentPage += 1;
 
     }
@@ -201,9 +166,12 @@ public class MoviesFragment extends Fragment {
 
             cursor = getActivity().getContentResolver().query(
                     uri, null, null, null, null);
-
-        String cursorContents = DatabaseUtils.dumpCursorToString(cursor);
-        Log.v(LOG_TAG, cursorContents);
+            if(cursor != null ) {
+                cursor.moveToLast();
+                String cursorContents = DatabaseUtils.dumpCurrentRowToString(cursor);
+                Log.v(LOG_TAG, cursorContents);
+                cursor.moveToFirst();
+            }
         }
         catch ( Exception e ){
             return null;
@@ -277,20 +245,51 @@ public class MoviesFragment extends Fragment {
     private void getAnotherPageOfMoviesIfNeeded(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
         if(shouldWeFetchMoreMovies(firstVisibleItem, visibleItemCount, totalItemCount)){
-            fetchMovies(currentPage);
+            fetchMoviesFromWeb(currentPage);
             currentPage += 1;
         }
+    }
+
+    private boolean shouldWeFetchMoreMovies(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+
+        int last = firstVisibleItem + visibleItemCount;
+
+        Log.v(LOG_TAG,
+                "currentPage: " + currentPage + ",  " +
+                        "firstVisibleItem: " + firstVisibleItem + ",  " +
+                        "visibleItemCount: " + visibleItemCount + ",  " +
+                        "totalItemCount: " + totalItemCount + ",  " +
+                        "last: " + last + ",  " +
+                        "morePagesOfMoviesLeftToGet: " + morePagesOfMoviesLeftToGet + ",  " +
+                        "currentlyFetchingMovies: " + currentlyFetchingMovies + ",  " +
+                        "(last == totalItemCount): " + (last == totalItemCount) + ",  "
+        );
+
+        if(visibleItemCount < 16)
+            return  false;
+
+        if(currentPage > 1 &&
+                visibleItemCount != 0
+                && ( (visibleItemCount + firstVisibleItem) == totalItemCount
+                && totalItemCount == last
+                && last == visibleItemCount ))
+            return false;
+
+//        if(firstVisibleItem == 0)
+//            return false;
+
+        return (last == totalItemCount) &&   // We've scrolled past the end of the grid view
+                !currentlyFetchingMovies &&        // We're not trying to grab movies already with
+                // another HTTPAsync client
+                morePagesOfMoviesLeftToGet;  // We're not out of pages of movies yet
+
     }
 
     private void startMovieDetailsActivity(int position) {
 
         MoviesResponse.ResultsEntity movie;
-//        if(getDataSource().equals("network")) {
-//            movie = moviesAdapter.getItem(position);
-//        }
-//        else {
-            movie = getMovieFromCursor(position);
-//        }
+        movie = getMovieFromCursor(position);
         Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
         intent.putExtra("movie", movie);
         startActivity(intent);
@@ -320,12 +319,8 @@ public class MoviesFragment extends Fragment {
         );
 
 
-//        cursor.close();   // Nope, still in use.
-
-
         return movie;
     }
-
 
     public ArrayList<Integer> getGenreIdsAsInegerArrayList(String genreIds) {
 
@@ -335,7 +330,8 @@ public class MoviesFragment extends Fragment {
                     .split(",");
             ArrayList<Integer> intArrayList = new ArrayList<Integer>(strArray.length);
             for (String i : strArray) {
-                intArrayList.add( Integer.parseInt(i));
+                if(i != null && !i.isEmpty())
+                    intArrayList.add( Integer.parseInt(i));
             }
 
             return intArrayList;
@@ -344,58 +340,14 @@ public class MoviesFragment extends Fragment {
             return null;
     }
 
-
-    private boolean shouldWeFetchMoreMovies(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-
-        int last = firstVisibleItem + visibleItemCount;
-
-        if(currentPage > 1 &&
-                visibleItemCount != 0
-                && ( (visibleItemCount + firstVisibleItem) == totalItemCount
-                && totalItemCount == last
-                && last == visibleItemCount ))
-            return false;
-
-
-        Log.v(LOG_TAG,
-                "firstVisibleItem: " + firstVisibleItem + ",  " +
-                "visibleItemCount: " + visibleItemCount + ",  " +
-                "totalItemCount: " + totalItemCount + ",  " +
-                "last: " + last + ",  "
-                );
-
-
-        return (last == totalItemCount) &&   // We've scrolled past the end of the grid view
-                !currentlyFetchingMovies &&        // We're not trying to grab movies already with
-                                                   // another HTTPAsync client
-                morePagesOfMoviesLeftToGet;  // We're not out of pages of movies yet
-
-    }
-
-    private void fetchMovies(int currentPage) {
-
-        fetchMoviesFromWeb(currentPage);
-//        insertOrUpdateMovies();
-
-    }
-
     @NonNull
     private String getDataSource() {
         return prefs.getString(
                 getActivity().getString(R.string.pref_data_source_key), "network");
     }
 
-//    private void insertOrUpdateMovies() {
-//        if(!moviesResultsEntity.isEmpty())
-//            for (MoviesResponse.ResultsEntity mr : moviesResultsEntity) {
-//                if(!isMovieAlreadyInDb(mr))
-//                    addMovieToDb(mr);
-//                else
-//                    updateMovie(mr);
-//            }
-//    }
 
-    private void updateMovie(MoviesResponse.ResultsEntity mr) {
+    private void updateMovie(MoviesResponse.ResultsEntity mr, boolean isLastResult) {
 
         // These values change at least daily, especially for popular movies
         final ContentValues movieValues = new ContentValues();
@@ -411,6 +363,10 @@ public class MoviesFragment extends Fragment {
                 movieValues,
                 selection, selectionArgs
         );
+
+        ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(isLastResult);
+
+        Log.v(LOG_TAG, "*** Updating Movie");
 
     }
 
@@ -429,11 +385,13 @@ public class MoviesFragment extends Fragment {
             );
 
             if (cursor != null && cursor.getCount() == 1) {
-                cursor.moveToFirst();
-                if (mr.getId() == cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)))
-                    return true;
+                Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: Movie is already in db.  Returning True." );
+                return true;
             }
-         }
+            else {
+                Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: Movie is NOT in db..");
+            }
+        }
         catch (Exception e) {
             Log.v(LOG_TAG, " ***  Failed getting cursor when checking to see " +
                     "if the movies is already in the database." );
@@ -441,8 +399,13 @@ public class MoviesFragment extends Fragment {
         finally {
             if(cursor != null) {
                 cursor.close();
+                Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: " +
+                        "Closing Cursor" );
             }
         }
+
+        Log.v(LOG_TAG, " ***  isMovieAlreadyInDb: " +
+                "returning false.." );
 
         return false;
     }
@@ -460,8 +423,6 @@ public class MoviesFragment extends Fragment {
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                // TODO Remove movieAdapter:
-                // addMoviesToAdapter(getMoviesResponse(responseBody));
                 int numberOfMovies = insertOrUpdateMovies(getMoviesResponse(responseBody));
                 // Don't allow more grid view scrolling when we're out of results
                 morePagesOfMoviesLeftToGet = numberOfMovies >= 20;
@@ -474,22 +435,23 @@ public class MoviesFragment extends Fragment {
 
     }
 
-//    private void addMoviesToAdapter(MoviesResponse moviesResponse) {
-//        if(!moviesResponse.getResults().isEmpty()) {
-//            for (MoviesResponse.ResultsEntity  result : moviesResponse.getResults() )
-//                moviesAdapter.add(result);
-//            currentlyFetchingMovies = false;  // This Async process is done, we can get more now if needed
-//        }
-//    }
 
     private int insertOrUpdateMovies(MoviesResponse moviesResponse) {
-        if(!moviesResponse.getResults().isEmpty())
+        if(!moviesResponse.getResults().isEmpty() ) {
+            int totalResults = moviesResponse.getResults().size();
+            int resultsProcessed = 0;
             for (MoviesResponse.ResultsEntity mr : moviesResponse.getResults()) {
-                if(!isMovieAlreadyInDb(mr))
-                    addMovieToDb(mr);
-                else
-                    updateMovie(mr);
+                resultsProcessed++;
+                if (isMovieAlreadyInDb(mr)) {
+                    updateMovie(mr, resultsProcessed == totalResults);
+                }
+                else {
+                    addMovieToDb(mr, resultsProcessed == totalResults);
+                }
             }
+        }
+
+
         return moviesResponse.getResults().size();
     }
 
@@ -500,39 +462,78 @@ public class MoviesFragment extends Fragment {
         return gson.fromJson(responsestr, MoviesResponse.class);
     }
 
-    private void addMovieToDb(final MoviesResponse.ResultsEntity mr){
-
-        final ContentValues movieValues = new ContentValues();
+    private void addMovieToDb(final MoviesResponse.ResultsEntity mr, boolean isLastResult){
 
         String fullPosterPathUrl =
                 getContext().getString(R.string.tmdb_base_image_url) + getContext().getString(R.string.tmdb_image_size_185) + mr.getPoster_path();
 
-        // final Target target;
-        Picasso.with(getActivity())
-                .load(fullPosterPathUrl)
-                .into(new Target() {
+        Log.v(LOG_TAG, "*** Entering addMovieToDb.  Loading: " + fullPosterPathUrl
+                + "  "  + mr.getTitle() );
 
-                @Override
-                public void onBitmapLoaded (Bitmap bitmap, Picasso.LoadedFrom from){
-                    byte[] imageBytes = getBitmapAsByteArray(bitmap);
-                    insertMovieIntoDB(imageBytes, movieValues, mr);
-                }
-
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
-
-                    Log.v(LOG_TAG, "*** Failed to Download Bitmap");
-
-                }
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) { }
-            }
-            );
+        Target bitmapTarget = new BitmapTarget(mr, isLastResult);
+        targetHashSet.add(bitmapTarget);
+        Picasso.with(getActivity()).load(fullPosterPathUrl).into(bitmapTarget);
 
     }
 
-    private void insertMovieIntoDB(byte[] imageBytes, ContentValues movieValues, MoviesResponse.ResultsEntity mr) {
+
+    class BitmapTarget implements Target {
+
+        MoviesResponse.ResultsEntity mMr;
+        boolean mIsLastResult;
+
+        public BitmapTarget(MoviesResponse.ResultsEntity mMr, boolean isLastResult) {
+            this.mMr = mMr;
+            this.mIsLastResult = isLastResult;
+        }
+
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
+
+            Log.v(LOG_TAG, "*** Entering bitmapLoaded");
+            byte[] imageBytes = getBitmapAsByteArray(bitmap);
+            insertMovieIntoDB(imageBytes, mMr);
+            ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(mIsLastResult);
+            targetHashSet.remove(this);
+        }
+
+
+
+        @Override
+        public void onBitmapFailed(Drawable drawable) {
+            Log.v(LOG_TAG, "*** Failed to Download Bitmap");
+            targetHashSet.remove(this);
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable drawable) {
+            Log.v(LOG_TAG, "*** Picasso onPrepareLoad  ");
+        }
+    }
+
+    private void ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(boolean isLastResult ) {
+
+        if(isLastResult) { // Change cursor after last result from a page has been downloaded
+
+            Cursor cursor = getCursorWithCurrentPreferences();
+            if(cursor != null)
+                cursor.moveToFirst();
+            moviesCursorAdapter.changeCursor(cursor);
+            moviesCursorAdapter.notifyDataSetChanged();
+
+            Log.v(LOG_TAG, "*** Swapped cursor after inserting or updating movies.");
+
+            setMovieItemClickListener(mGridView);
+            setUpMovieGridviewEndlessScrolling(mGridView);
+
+            currentlyFetchingMovies = false;
+        }
+
+    }
+
+    private void insertMovieIntoDB(byte[] imageBytes, MoviesResponse.ResultsEntity mr) {
+
+        final ContentValues movieValues = new ContentValues();
 
         movieValues.put(MovieEntry.COLUMN_POSTER_PATH, mr.getPoster_path() );
         movieValues.put(MovieEntry.COLUMN_ADULT, mr.isAdult());
@@ -559,7 +560,7 @@ public class MoviesFragment extends Fragment {
         getContext().getContentResolver().insert(
                 MovieEntry.CONTENT_URI, movieValues);
 
-//        Log.v(LOG_TAG, "*** Downloaded Bitmap Successfully and inserted it");
+       Log.v(LOG_TAG, "*** Downloaded Bitmap Successfully and inserted it");
     }
 
     public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
