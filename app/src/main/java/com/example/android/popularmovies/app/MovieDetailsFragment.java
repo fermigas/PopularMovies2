@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.app;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -20,6 +21,8 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.squareup.picasso.Picasso;
 
 import org.apache.http.Header;
+
+import static com.example.android.popularmovies.app.MoviesContract.*;
 
 // TODO Organize movie details fragment layout to support
 //         App Bar
@@ -53,7 +56,10 @@ public class MovieDetailsFragment extends Fragment {
         getMovieFromParcelableExtra();
 
         showMovieData(rootView);
+
         showMovieTrailers(rootView);
+
+
         showMovieReviews(rootView);
 
         return rootView;
@@ -62,27 +68,24 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieTrailers(View rootView) {
 
-        String url = getMovieTrailersUrl(Integer.toString(movie.getId()) );
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
 
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                String responsestr = new String(responseBody);
-                Gson gson = new Gson();
-                trailersResponse = gson.fromJson(responsestr, MovieTrailersResponse.class);
-                movieTrailersCustomAdapter = new MovieTrailersCustomAdapter(getActivity(), trailersResponse.getYoutube() );
-                trailersListView.setAdapter(movieTrailersCustomAdapter);
+        Cursor cursor = null;
+        try {
+            cursor = getActivity().getContentResolver().query(
+                    TrailerEntry.buildTrailerWithMovieId(String.valueOf(movie.getId())),
+                    null, null, null, null);
+            if (cursor != null) {
+                cursor.moveToFirst();
             }
+        } catch (Exception e) {
+        }
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
-            }
-        });
+        TrailersCursorAdapter tca = new TrailersCursorAdapter(getActivity(), cursor, 0);
+        trailersListView.setAdapter(tca);
 
     }
+
 
     private void showMovieReviews(View rootView) {
 

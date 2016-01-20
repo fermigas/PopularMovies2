@@ -63,6 +63,13 @@ public class MoviesContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
+        public static Uri buildTrailerWithMovieId(String movieID) {
+            return CONTENT_URI.buildUpon().appendPath(movieID).build();
+        }
+
+        public static String getMovieIdgFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
 
 
     }

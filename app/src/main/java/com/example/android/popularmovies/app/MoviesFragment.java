@@ -37,6 +37,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ListView;
 
 import com.example.android.popularmovies.app.MoviesContract.MovieEntry;
 import com.google.gson.Gson;
@@ -67,6 +68,9 @@ public class MoviesFragment extends Fragment {
     private GridView mGridView;
     private Target target;
 
+    private MovieTrailersResponse trailersResponse;
+    private MovieReviewsResponse reviewsResponse;
+
     final Set<Target> targetHashSet = new HashSet<>();
 
     public MoviesFragment() {
@@ -79,7 +83,7 @@ public class MoviesFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outstate){
+    public void onSaveInstanceState(Bundle outstate) {
         super.onSaveInstanceState(outstate);
     }
 
@@ -103,7 +107,7 @@ public class MoviesFragment extends Fragment {
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
 
         Cursor cursor = getCursorWithCurrentPreferences();
-        moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor , 0);
+        moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor, 0);
         mGridView.setAdapter(moviesCursorAdapter);
         setMovieItemClickListener(mGridView);
         setUpMovieGridviewEndlessScrolling(mGridView);
@@ -116,8 +120,7 @@ public class MoviesFragment extends Fragment {
 
         if (getDataSource().equals("network")) {
             getFirstPageOfMovies();
-        }
-        else{  // Because settings might have changed
+        } else {  // Because settings might have changed
             reattachGridViewCursorAdapter();
         }
 
@@ -125,7 +128,7 @@ public class MoviesFragment extends Fragment {
 
     private void reattachGridViewCursorAdapter() {
         Cursor cursor = getCursorWithCurrentPreferences();
-        if(cursor != null)
+        if (cursor != null)
             cursor.moveToFirst();
         moviesCursorAdapter.changeCursor(cursor);
         moviesCursorAdapter.notifyDataSetChanged();
@@ -147,14 +150,15 @@ public class MoviesFragment extends Fragment {
         Cursor cursor;
         try {
             cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
-            if(cursor != null ) {
+            if (cursor != null) {
                 cursor.moveToLast();
 //                String cursorContents = DatabaseUtils.dumpCurrentRowToString(cursor);
 //                Log.v(LOG_TAG, cursorContents);
                 cursor.moveToFirst();
             }
+        } catch (Exception e) {
+            return null;
         }
-        catch ( Exception e ){ return null; }
 
         return cursor;
     }
@@ -172,7 +176,7 @@ public class MoviesFragment extends Fragment {
         String genreIds = getGenresAsCommaSeparatedNumbers();
         String sortOrder = prefs.getString(getActivity().getString(R.string.pref_sort_order_key), "none");
 
-        String[] values = {  dataSource, voteCount, timePeriods, genreIds, sortOrder };
+        String[] values = {dataSource, voteCount, timePeriods, genreIds, sortOrder};
 
         Uri uri = MoviesContract.MovieEntry.buildMoviesUriWithQueryParameters(
                 MovieEntry.CONTENT_URI, keys, values
@@ -185,7 +189,7 @@ public class MoviesFragment extends Fragment {
 
         String genres;
         Set<String> genresSet = prefs.getStringSet("genre_ids", null);
-        if ( genresSet != null && !genresSet.isEmpty()  )
+        if (genresSet != null && !genresSet.isEmpty())
             genres = genresSet.toString().replaceAll("\\s+", "").replace("[", "").replace("]", "");
         else
             genres = "";
@@ -210,7 +214,7 @@ public class MoviesFragment extends Fragment {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if(getDataSource().equals("network"))
+                if (getDataSource().equals("network"))
                     getAnotherPageOfMoviesIfNeeded(firstVisibleItem, visibleItemCount, totalItemCount);
             }
         });
@@ -218,7 +222,7 @@ public class MoviesFragment extends Fragment {
 
     private void getAnotherPageOfMoviesIfNeeded(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
-        if(shouldWeFetchMoreMovies(firstVisibleItem, visibleItemCount, totalItemCount)){
+        if (shouldWeFetchMoreMovies(firstVisibleItem, visibleItemCount, totalItemCount)) {
             fetchMoviesFromWeb(currentPage);
             currentPage += 1;
         }
@@ -230,11 +234,11 @@ public class MoviesFragment extends Fragment {
         int last = firstVisibleItem + visibleItemCount;
 
 
-        if(currentPage > 1 &&
+        if (currentPage > 1 &&
                 visibleItemCount != 0
-                && ( (visibleItemCount + firstVisibleItem) == totalItemCount
+                && ((visibleItemCount + firstVisibleItem) == totalItemCount
                 && totalItemCount == last
-                && last == visibleItemCount ))
+                && last == visibleItemCount))
             return false;
 
 
@@ -283,19 +287,18 @@ public class MoviesFragment extends Fragment {
 
     public ArrayList<Integer> getGenreIdsAsInegerArrayList(String genreIds) {
 
-        if(genreIds != null) {
+        if (genreIds != null) {
             String[] strArray = genreIds
-                    .replace("[", "").replace("]", "").replaceAll("\\s+","")
+                    .replace("[", "").replace("]", "").replaceAll("\\s+", "")
                     .split(",");
             ArrayList<Integer> intArrayList = new ArrayList<Integer>(strArray.length);
             for (String i : strArray) {
-                if(i != null && !i.isEmpty())
-                    intArrayList.add( Integer.parseInt(i));
+                if (i != null && !i.isEmpty())
+                    intArrayList.add(Integer.parseInt(i));
             }
 
             return intArrayList;
-        }
-        else
+        } else
             return null;
     }
 
@@ -343,14 +346,11 @@ public class MoviesFragment extends Fragment {
 
             if (cursor != null && cursor.getCount() == 1) {
                 return true;
+            } else {
             }
-            else {
-            }
-        }
-        catch (Exception e) {
-        }
-        finally {
-            if(cursor != null) {
+        } catch (Exception e) {
+        } finally {
+            if (cursor != null) {
                 cursor.close();
             }
         }
@@ -386,15 +386,14 @@ public class MoviesFragment extends Fragment {
 
     private int insertOrUpdateMovies(MoviesResponse moviesResponse) {
         int totalResults = 0;  // Assume no results left to get
-        if(!moviesResponse.getResults().isEmpty() ) {
+        if (!moviesResponse.getResults().isEmpty()) {
             totalResults = moviesResponse.getResults().size();
             int resultsProcessed = 0;
             for (MoviesResponse.ResultsEntity mr : moviesResponse.getResults()) {
                 resultsProcessed++;
                 if (isMovieAlreadyInDb(mr)) {
                     updateMovie(mr, resultsProcessed == totalResults);
-                }
-                else {
+                } else {
                     addMovieToDb(mr, resultsProcessed == totalResults);
                 }
             }
@@ -410,7 +409,7 @@ public class MoviesFragment extends Fragment {
         return gson.fromJson(responsestr, MoviesResponse.class);
     }
 
-    private void addMovieToDb(final MoviesResponse.ResultsEntity mr, boolean isLastResult){
+    private void addMovieToDb(final MoviesResponse.ResultsEntity mr, boolean isLastResult) {
 
         String fullPosterPathUrl =
                 getContext().getString(R.string.tmdb_base_image_url) + getContext().getString(R.string.tmdb_image_size_185) + mr.getPoster_path();
@@ -451,9 +450,9 @@ public class MoviesFragment extends Fragment {
         }
     }
 
-    private void ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(boolean isLastResult ) {
+    private void ifFullPageOfMoviesHasBeenInsertedOrUpdatedChangeCursor(boolean isLastResult) {
 
-        if(isLastResult) { // Change cursor after last result from a page has been downloaded
+        if (isLastResult) { // Change cursor after last result from a page has been downloaded
             reattachGridViewCursorAdapter();
         }
 
@@ -463,7 +462,7 @@ public class MoviesFragment extends Fragment {
 
         final ContentValues movieValues = new ContentValues();
 
-        movieValues.put(MovieEntry.COLUMN_POSTER_PATH, mr.getPoster_path() );
+        movieValues.put(MovieEntry.COLUMN_POSTER_PATH, mr.getPoster_path());
         movieValues.put(MovieEntry.COLUMN_ADULT, mr.isAdult());
         movieValues.put(MovieEntry.COLUMN_OVERVIEW, mr.getOverview());
         movieValues.put(MovieEntry.COLUMN_RELEASE_DATE, mr.getRelease_date());
@@ -483,8 +482,14 @@ public class MoviesFragment extends Fragment {
         movieValues.put(MovieEntry.COLUMN_WATCH_ME, 0);
         movieValues.put(MovieEntry.COLUMN_POSTER_BITMAP, imageBytes);
 
-        getContext().getContentResolver().insert( MovieEntry.CONTENT_URI, movieValues);
+        getContext().getContentResolver().insert(MovieEntry.CONTENT_URI, movieValues);
+
+        Trailers trailer = new Trailers(mr.getId());
+        trailer.getTrailersFromWebAndInsertThemInDb();
+
+        // getTrailersFromWeb(mr.getId());
     }
+
 
     public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -492,4 +497,80 @@ public class MoviesFragment extends Fragment {
         return outputStream.toByteArray();
     }
 
+
+    public class Trailers {
+
+        int mMovieId;
+
+        public Trailers(int mMovieId) {
+            this.mMovieId = mMovieId;
+        }
+
+        private void getTrailersFromWebAndInsertThemInDb() {
+
+            String url = getMovieTrailersUrl(Integer.toString(mMovieId));
+
+            AsyncHttpClient client = new AsyncHttpClient();
+            client.get(getActivity(), url, new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    String responsestr = new String(responseBody);
+                    Gson gson = new Gson();
+                    trailersResponse = gson.fromJson(responsestr, MovieTrailersResponse.class);
+                    insertTrailers(trailersResponse);
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
+                }
+            });
+
+        }
+
+        private String getMovieTrailersUrl(String movieId) {
+
+            Uri uri = Uri.parse(getMovieTrailersBaseURL(movieId));
+            Uri.Builder builder = uri.buildUpon();
+            builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
+            uri = builder.build();
+            return uri.toString();
+        }
+
+
+        private String getMovieTrailersBaseURL(String movieID) {
+            return "http://api.themoviedb.org/3/movie/" + movieID + "/trailers?";
+        }
+
+
+
+        private void insertTrailers(MovieTrailersResponse mtr) {
+
+            if (!mtr.getYoutube().isEmpty()) {
+                for (MovieTrailersResponse.YoutubeEntity yte : mtr.getYoutube()) {
+                    addTrailerToDb(mtr, yte);
+                }
+            }
+        }
+
+
+        private void addTrailerToDb(MovieTrailersResponse mtr,
+                                    MovieTrailersResponse.YoutubeEntity yte) {
+
+            ContentValues trailerValues = new ContentValues();
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_MOVIE_ID, mtr.getId());
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, yte.getName());
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, yte.getSize());
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SOURCE, yte.getSource());
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, yte.getType());
+
+            getContext().getContentResolver().insert(MoviesContract.TrailerEntry.CONTENT_URI,
+                    trailerValues);
+
+        }
+
+    }
 }
+
+
+

@@ -68,6 +68,10 @@ public class MovieProvider extends ContentProvider {
                 retCursor = getMoviesWithQueryString(uri, projection, sortOrder);
                 break;
             }
+            case TRAILERS_BY_MOVIE_ID: {
+                retCursor = getTrailersByMovieId(uri, projection, sortOrder);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -75,13 +79,31 @@ public class MovieProvider extends ContentProvider {
         return retCursor;
     }
 
+    private Cursor getTrailersByMovieId(Uri uri, String[] projection, String sortOrder) {
+
+        String movieId = MoviesContract.TrailerEntry.getMovieIdgFromUri(uri);
+        String selection = MoviesContract.TrailerEntry.COLUMN_MOVIE_ID + " = ? ";
+        String[] selectionArgs = new String[]{movieId};
+
+        return  mOpenHelper.getReadableDatabase().query(
+                MoviesContract.TrailerEntry.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+    }
+
     private Cursor getMoviesWithQueryString(Uri uri, String[] projection, String sortOrder) {
 
         MovieCursorQueryParameters mcqp = new MovieCursorQueryParameters(uri);
 
-        Log.v(LOG_TAG, " *** mcqp.getSelection:  "      + mcqp.getSelection());
-        Log.v(LOG_TAG, " *** mcqp.getSelectionArgs:  "  + Arrays.toString(mcqp.getSelectionArgs()));
-        Log.v(LOG_TAG, " *** mcqp.SortOrder:  "         + mcqp.getSortOrder());
+//        Log.v(LOG_TAG, " *** mcqp.getSelection:  "      + mcqp.getSelection());
+//        Log.v(LOG_TAG, " *** mcqp.getSelectionArgs:  "  + Arrays.toString(mcqp.getSelectionArgs()));
+//        Log.v(LOG_TAG, " *** mcqp.SortOrder:  "         + mcqp.getSortOrder());
 
         return  mOpenHelper.getReadableDatabase().query(
                 MoviesContract.MovieEntry.TABLE_NAME,
@@ -281,6 +303,7 @@ public class MovieProvider extends ContentProvider {
         matcher.addURI(authority, MoviesContract.PATH_REVIEW, REVIEWS);
 
         matcher.addURI(authority, MoviesContract.PATH_MOVIE + "/*", MOVIES_WITH_QUERY_STRING);
+        matcher.addURI(authority, MoviesContract.PATH_TRAILER + "/*", TRAILERS_BY_MOVIE_ID);
 
         return matcher;
     }
