@@ -86,58 +86,78 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
-
     private void showMovieReviews(View rootView) {
 
-        String url = getMovieReviewsUrl(Integer.toString(movie.getId()));
         reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
 
-        AsyncHttpClient client = new AsyncHttpClient();
-        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                String responsestr = new String(responseBody);
-                Gson gson = new Gson();
-                reviewsResponse = gson.fromJson(responsestr, MovieReviewsResponse.class);
-                movieReviewsCustomAdapter = new MovieReviewsCustomAdapter(getActivity(), reviewsResponse.getResults() );
-                reviewsListView.setAdapter(movieReviewsCustomAdapter);
+        Cursor cursor = null;
+        try {
+            cursor = getActivity().getContentResolver().query(
+                    ReviewEntry.buildReviewWithMovieId(String.valueOf(movie.getId())),
+                    null, null, null, null);
+            if (cursor != null) {
+                cursor.moveToFirst();
             }
+        } catch (Exception e) {
+        }
 
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
-            }
-        });
+        ReviewsCursorAdapter rca = new ReviewsCursorAdapter(getActivity(), cursor, 0);
+        reviewsListView.setAdapter(rca);
 
     }
 
 
-    @NonNull
-    private String getMovieReviewsUrl(String movieId)  {
+//    private void showMovieReviews(View rootView) {
+//
+//        String url = getMovieReviewsUrl(Integer.toString(movie.getId()));
+//        reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
+//
+//        AsyncHttpClient client = new AsyncHttpClient();
+//        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
+//            @Override
+//            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+//                String responsestr = new String(responseBody);
+//                Gson gson = new Gson();
+//                reviewsResponse = gson.fromJson(responsestr, MovieReviewsResponse.class);
+//                movieReviewsCustomAdapter = new MovieReviewsCustomAdapter(getActivity(), reviewsResponse.getResults() );
+//                reviewsListView.setAdapter(movieReviewsCustomAdapter);
+//            }
+//
+//            @Override
+//            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+//
+//            }
+//        });
+//
+//    }
 
-        Uri uri = Uri.parse(getMovieReviewsBaseURL(movieId));
-        Uri.Builder builder = uri.buildUpon();
-        builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
-        uri = builder.build();
-        return uri.toString();
-    }
 
-    private String getMovieTrailersUrl(String movieId)  {
+//    @NonNull
+//    private String getMovieReviewsUrl(String movieId)  {
+//
+//        Uri uri = Uri.parse(getMovieReviewsBaseURL(movieId));
+//        Uri.Builder builder = uri.buildUpon();
+//        builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
+//        uri = builder.build();
+//        return uri.toString();
+//    }
+//
+//    private String getMovieTrailersUrl(String movieId)  {
+//
+//        Uri uri = Uri.parse(getMovieTrailersBaseURL(movieId));
+//        Uri.Builder builder = uri.buildUpon();
+//        builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
+//        uri = builder.build();
+//        return uri.toString();
+//    }
 
-        Uri uri = Uri.parse(getMovieTrailersBaseURL(movieId));
-        Uri.Builder builder = uri.buildUpon();
-        builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
-        uri = builder.build();
-        return uri.toString();
-    }
-
-    private String getMovieReviewsBaseURL(String movieID){
-        return "http://api.themoviedb.org/3/movie/" + movieID + "/reviews?";
-    }
-
-    private String getMovieTrailersBaseURL(String movieID){
-        return "http://api.themoviedb.org/3/movie/" + movieID + "/trailers?";
-    }
+//    private String getMovieReviewsBaseURL(String movieID){
+//        return "http://api.themoviedb.org/3/movie/" + movieID + "/reviews?";
+//    }
+//
+//    private String getMovieTrailersBaseURL(String movieID){
+//        return "http://api.themoviedb.org/3/movie/" + movieID + "/trailers?";
+//    }
 
     private void getMovieFromParcelableExtra() {
 

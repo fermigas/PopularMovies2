@@ -19,7 +19,6 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -27,7 +26,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,7 +35,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.ListView;
 
 import com.example.android.popularmovies.app.MoviesContract.MovieEntry;
 import com.google.gson.Gson;
@@ -68,7 +65,6 @@ public class MoviesFragment extends Fragment {
     private GridView mGridView;
     private Target target;
 
-    private MovieTrailersResponse trailersResponse;
     private MovieReviewsResponse reviewsResponse;
 
     final Set<Target> targetHashSet = new HashSet<>();
@@ -484,10 +480,12 @@ public class MoviesFragment extends Fragment {
 
         getContext().getContentResolver().insert(MovieEntry.CONTENT_URI, movieValues);
 
-        Trailers trailer = new Trailers(mr.getId());
-        trailer.getTrailersFromWebAndInsertThemInDb();
+        Trailers trailers = new Trailers(getActivity(), mr.getId());
+        trailers.getTrailersFromWebAndInsertThemInDb();
 
-        // getTrailersFromWeb(mr.getId());
+        Reviews reviews = new Reviews(getActivity(), mr.getId());
+        reviews.getReviewsFromWebAndInsertThemInDb();
+
     }
 
 
@@ -498,78 +496,6 @@ public class MoviesFragment extends Fragment {
     }
 
 
-    public class Trailers {
-
-        int mMovieId;
-
-        public Trailers(int mMovieId) {
-            this.mMovieId = mMovieId;
-        }
-
-        private void getTrailersFromWebAndInsertThemInDb() {
-
-            String url = getMovieTrailersUrl(Integer.toString(mMovieId));
-
-            AsyncHttpClient client = new AsyncHttpClient();
-            client.get(getActivity(), url, new AsyncHttpResponseHandler() {
-                @Override
-                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                    String responsestr = new String(responseBody);
-                    Gson gson = new Gson();
-                    trailersResponse = gson.fromJson(responsestr, MovieTrailersResponse.class);
-                    insertTrailers(trailersResponse);
-                }
-
-                @Override
-                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
-                }
-            });
-
-        }
-
-        private String getMovieTrailersUrl(String movieId) {
-
-            Uri uri = Uri.parse(getMovieTrailersBaseURL(movieId));
-            Uri.Builder builder = uri.buildUpon();
-            builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
-            uri = builder.build();
-            return uri.toString();
-        }
-
-
-        private String getMovieTrailersBaseURL(String movieID) {
-            return "http://api.themoviedb.org/3/movie/" + movieID + "/trailers?";
-        }
-
-
-
-        private void insertTrailers(MovieTrailersResponse mtr) {
-
-            if (!mtr.getYoutube().isEmpty()) {
-                for (MovieTrailersResponse.YoutubeEntity yte : mtr.getYoutube()) {
-                    addTrailerToDb(mtr, yte);
-                }
-            }
-        }
-
-
-        private void addTrailerToDb(MovieTrailersResponse mtr,
-                                    MovieTrailersResponse.YoutubeEntity yte) {
-
-            ContentValues trailerValues = new ContentValues();
-            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_MOVIE_ID, mtr.getId());
-            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, yte.getName());
-            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, yte.getSize());
-            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SOURCE, yte.getSource());
-            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, yte.getType());
-
-            getContext().getContentResolver().insert(MoviesContract.TrailerEntry.CONTENT_URI,
-                    trailerValues);
-
-        }
-
-    }
 }
 
 

@@ -8,11 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static com.example.android.popularmovies.app.MoviesContract.CONTENT_AUTHORITY;
 
@@ -72,6 +67,10 @@ public class MovieProvider extends ContentProvider {
                 retCursor = getTrailersByMovieId(uri, projection, sortOrder);
                 break;
             }
+            case REVIEWS_BY_MOVIE_ID: {
+                retCursor = getReviewsByMovieId(uri, projection, sortOrder);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -81,12 +80,29 @@ public class MovieProvider extends ContentProvider {
 
     private Cursor getTrailersByMovieId(Uri uri, String[] projection, String sortOrder) {
 
-        String movieId = MoviesContract.TrailerEntry.getMovieIdgFromUri(uri);
+        String movieId = MoviesContract.TrailerEntry.getMovieIdFromUri(uri);
         String selection = MoviesContract.TrailerEntry.COLUMN_MOVIE_ID + " = ? ";
         String[] selectionArgs = new String[]{movieId};
 
         return  mOpenHelper.getReadableDatabase().query(
                 MoviesContract.TrailerEntry.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+    }
+    private Cursor getReviewsByMovieId(Uri uri, String[] projection, String sortOrder) {
+
+        String movieId = MoviesContract.ReviewEntry.getMovieIdFromUri(uri);
+        String selection = MoviesContract.ReviewEntry.COLUMN_MOVIE_ID + " = ? ";
+        String[] selectionArgs = new String[]{movieId};
+
+        return  mOpenHelper.getReadableDatabase().query(
+                MoviesContract.ReviewEntry.TABLE_NAME,
                 null,
                 selection,
                 selectionArgs,
@@ -304,6 +320,7 @@ public class MovieProvider extends ContentProvider {
 
         matcher.addURI(authority, MoviesContract.PATH_MOVIE + "/*", MOVIES_WITH_QUERY_STRING);
         matcher.addURI(authority, MoviesContract.PATH_TRAILER + "/*", TRAILERS_BY_MOVIE_ID);
+        matcher.addURI(authority, MoviesContract.PATH_REVIEW + "/*", REVIEWS_BY_MOVIE_ID);
 
         return matcher;
     }
