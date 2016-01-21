@@ -251,6 +251,8 @@ public class MoviesFragment extends Fragment {
         movie = getMovieFromCursor(position);
         Intent intent = new Intent(getActivity(), MovieDetailsActivity.class);
         intent.putExtra("movie", movie);
+        boolean favoriteState =  getFavoritesState(position);
+        intent.putExtra("favorite_state", favoriteState);
         startActivity(intent);
     }
 
@@ -279,6 +281,14 @@ public class MoviesFragment extends Fragment {
 
 
         return movie;
+    }
+
+    private boolean getFavoritesState(int position) {
+
+        Cursor cursor = moviesCursorAdapter.getCursor();
+
+        return ( (cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_FAVORITE)) == 1)
+                ? true : false );
     }
 
     public ArrayList<Integer> getGenreIdsAsInegerArrayList(String genreIds) {

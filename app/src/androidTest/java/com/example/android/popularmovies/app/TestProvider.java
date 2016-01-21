@@ -189,6 +189,42 @@ public class TestProvider  extends AndroidTestCase {
      }
 
 
+    public void testUpdateReadProvider() {
+
+        /** Insert a movie and wait to be notified of it  ***/
+        ContentValues MovieValues = TestUtilities.createMovieValues(mContext);
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(MovieEntry.CONTENT_URI, true, tco);
+        Uri MovieInsertUri = mContext.getContentResolver()
+                .insert(MovieEntry.CONTENT_URI, MovieValues);
+        assertTrue(MovieInsertUri != null);
+        tco.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(tco);
+        // Insure it's there by querying for it
+        Cursor movieCursor = mContext.getContentResolver().query(
+                MovieEntry.CONTENT_URI, null,  null,  null, null
+        );
+        // Validate it
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating MovieEntry insert.",
+                movieCursor, MovieValues);
+
+        // Update favorites to "1"
+        MovieValues.put(MovieEntry.COLUMN_FAVORITE, 1);
+        int rowsUpdated = mContext.getContentResolver()
+                .update(MovieEntry.CONTENT_URI,
+                        MovieValues,
+                        MovieEntry.COLUMN_MOVIE_ID + " = ? ",
+                        new String[] {"140607"}
+                );
+        assertTrue(rowsUpdated == 1);
+
+        if(movieCursor != null)
+            movieCursor.close();
+
+
+    }
+
+
     static private final int BULK_INSERT_RECORDS_TO_INSERT = 20;
 
     public void testBulkInsert() {

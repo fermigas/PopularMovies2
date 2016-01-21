@@ -175,7 +175,7 @@ public class TestDb extends AndroidTestCase {
         assertTrue(movieRowId != -1);
 
         Cursor cursor = db.query(
-                MoviesContract.MovieEntry.TABLE_NAME,  null, null, null, null, null, null);
+                MoviesContract.MovieEntry.TABLE_NAME, null, null, null, null, null, null);
 
         assertTrue("Error: No Records returned from movie query", cursor.moveToFirst());
 

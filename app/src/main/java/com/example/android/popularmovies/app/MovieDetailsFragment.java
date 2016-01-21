@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.app;
 
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -12,9 +13,11 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.squareup.picasso.Picasso;
 
@@ -34,12 +37,10 @@ public class MovieDetailsFragment extends Fragment {
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
     private MoviesResponse.ResultsEntity movie;
-    private MovieTrailersResponse trailersResponse;
-    private MovieTrailersCustomAdapter movieTrailersCustomAdapter;
     private ListView trailersListView;
     private ListView reviewsListView;
-    private MovieReviewsResponse reviewsResponse;
-    private MovieReviewsCustomAdapter movieReviewsCustomAdapter;
+    boolean favoriteState;
+
 
     public MovieDetailsFragment() {
         setHasOptionsMenu(true);
@@ -51,12 +52,42 @@ public class MovieDetailsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.details_fragment, container, false);
 
         getMovieFromParcelableExtra();
+        setFavoritesToggleButtonInitialState(rootView);
         showMovieData(rootView);
         showMovieTrailers(rootView);
         showMovieReviews(rootView);
 
+        setToggleButtonHandler(rootView);
 
         return rootView;
+    }
+
+    private void setToggleButtonHandler(View rootView) {
+        ToggleButton toggle = (ToggleButton) rootView.findViewById(R.id.toggle_button);
+        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                setFavoriteState(!getFavoriteState());
+                if (isChecked) {
+                    updateFavoriteInDb(1);
+                } else {
+                    updateFavoriteInDb(0);
+                }
+            }
+        });
+    }
+
+    private void updateFavoriteInDb(int favoriteState) {
+
+        ContentValues movieValues = new ContentValues();
+        movieValues.put(MoviesContract.MovieEntry.COLUMN_FAVORITE, favoriteState);
+
+        int rowsUpdated = getContext().getContentResolver()
+                .update(MoviesContract.MovieEntry.CONTENT_URI,
+                        movieValues,
+                        MoviesContract.MovieEntry.COLUMN_MOVIE_ID + " = ? ",
+                        new String[] {String.valueOf(movie.getId())}
+                );
+
     }
 
 
@@ -140,6 +171,23 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
+    private void setFavoritesToggleButtonInitialState(View rootView) {
+
+        ToggleButton toggle = (ToggleButton) rootView.findViewById(R.id.toggle_button);
+        setFavoriteState(getFavoriteStateExtra());
+        toggle.setChecked(getFavoriteState());
+
+    }
+
+    private boolean getFavoriteStateExtra() {
+
+        Intent intent = getActivity().getIntent();
+        if (intent != null && intent.hasExtra("favorite_state"))
+            return intent.getBooleanExtra("favorite_state", false);
+        else
+            return false;
+    }
+
     private void showMovieData(View rootView) {
 
         if (movie != null )
@@ -153,16 +201,17 @@ public class MovieDetailsFragment extends Fragment {
         showScrollingMovieOverview(rootView);
         showMovieReleaseDate(rootView);
         showMovieVoteAverage(rootView);
-    }
-
-    private void showMovieVoteAverage(View rootView) {
-        ((TextView) rootView.findViewById(R.id.details_rating))
-                .setText(getString(R.string.movie_details_vote_average) + movie.getVote_average() + "/10");
+        setFavoritesToggleButtonInitialState(rootView);
     }
 
     private void showMovieReleaseDate(View rootView) {
         ((TextView) rootView.findViewById(R.id.details_release_date))
-                .setText(getString(R.string.movie_details_release_date) + movie.getRelease_date());
+                .setText(movie.getRelease_date().substring(0,4));
+    }
+
+    private void showMovieVoteAverage(View rootView) {
+        ((TextView) rootView.findViewById(R.id.details_rating))
+                .setText(movie.getVote_average() + "/10");
     }
 
     private void showScrollingMovieOverview(View rootView) {
@@ -191,4 +240,11 @@ public class MovieDetailsFragment extends Fragment {
     }
 
 
+    public void setFavoriteState(boolean favoriteState) {
+        this.favoriteState = favoriteState;
+    }
+
+    public boolean getFavoriteState() {
+        return favoriteState;
+    }
 }
