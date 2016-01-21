@@ -8,6 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.util.Log;
+
+import java.util.Arrays;
 
 import static com.example.android.popularmovies.app.MoviesContract.CONTENT_AUTHORITY;
 

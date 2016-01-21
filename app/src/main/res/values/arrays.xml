@@ -171,6 +171,6 @@
     <string-array name="pref_data_source_values">
         <item>"network"</item>
         <item>"cache"</item>
-        <item>"favorites"</item>
+        <item>"favorite"</item>
     </string-array>
 </resources>

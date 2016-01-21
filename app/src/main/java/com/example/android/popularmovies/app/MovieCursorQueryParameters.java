@@ -113,7 +113,7 @@ public class MovieCursorQueryParameters {
                 case "all":
                     return null;
                 // return
-                case "favorite_movies":
+                case "favorite":
                     return
                             MoviesContract.MovieEntry.TABLE_NAME + "." +
                                     MoviesContract.MovieEntry.COLUMN_FAVORITE + " = ? ";
@@ -146,7 +146,7 @@ public class MovieCursorQueryParameters {
                 case "all":
                     return null;
                 // return
-                case "favorite_movies":
+                case "favorite":
                     return "1";
                 case "watched":
                     return "1";
