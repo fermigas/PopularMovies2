@@ -15,7 +15,7 @@ public class TestMovieCursorQueryParameters extends AndroidTestCase {
     };
 
     public static final String[] TEST_VALUES = new String[]{
-            "favorite_movies", "10", "1980", "1,2,35793", "none"
+            "favorite", "10", "1980", "1,2,35793", "none"
     };
 
     private static final Uri TEST_ALL_QUERY_STRINGS =
