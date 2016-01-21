@@ -1,28 +1,25 @@
 package com.example.android.popularmovies.app;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.squareup.picasso.Picasso;
 
-import org.apache.http.Header;
-
-import static com.example.android.popularmovies.app.MoviesContract.*;
+import static com.example.android.popularmovies.app.MoviesContract.ReviewEntry;
+import static com.example.android.popularmovies.app.MoviesContract.TrailerEntry;
 
 // TODO Organize movie details fragment layout to support
 //         App Bar
@@ -54,13 +51,10 @@ public class MovieDetailsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.details_fragment, container, false);
 
         getMovieFromParcelableExtra();
-
         showMovieData(rootView);
-
         showMovieTrailers(rootView);
-
-
         showMovieReviews(rootView);
+
 
         return rootView;
     }
@@ -84,8 +78,40 @@ public class MovieDetailsFragment extends Fragment {
         TrailersCursorAdapter tca = new TrailersCursorAdapter(getActivity(), cursor, 0);
         trailersListView.setAdapter(tca);
 
+        trailersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Intent intent = getActivity()
+                        .getPackageManager()
+                        .getLaunchIntentForPackage("com.google.android.youtube");
+
+                TextView sourceView = (TextView) view.findViewById(
+                        R.id.list_item_movie_trailer_url_textview);
+
+                String source = sourceView.getText().toString() ;
+                watchYoutubeVideo(source);
+
+            }
+        });
     }
 
+
+    private void watchYoutubeVideo(String source){
+
+        try{
+
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + source));
+            startActivity(intent);
+
+        }catch (ActivityNotFoundException e){
+
+            Intent intent=new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://www.youtube.com/watch?v="+source));
+
+            startActivity(intent);
+        }
+    }
     private void showMovieReviews(View rootView) {
 
         reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
@@ -105,59 +131,6 @@ public class MovieDetailsFragment extends Fragment {
         reviewsListView.setAdapter(rca);
 
     }
-
-
-//    private void showMovieReviews(View rootView) {
-//
-//        String url = getMovieReviewsUrl(Integer.toString(movie.getId()));
-//        reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
-//
-//        AsyncHttpClient client = new AsyncHttpClient();
-//        client.get(getActivity(), url, new AsyncHttpResponseHandler() {
-//            @Override
-//            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-//                String responsestr = new String(responseBody);
-//                Gson gson = new Gson();
-//                reviewsResponse = gson.fromJson(responsestr, MovieReviewsResponse.class);
-//                movieReviewsCustomAdapter = new MovieReviewsCustomAdapter(getActivity(), reviewsResponse.getResults() );
-//                reviewsListView.setAdapter(movieReviewsCustomAdapter);
-//            }
-//
-//            @Override
-//            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-//
-//            }
-//        });
-//
-//    }
-
-
-//    @NonNull
-//    private String getMovieReviewsUrl(String movieId)  {
-//
-//        Uri uri = Uri.parse(getMovieReviewsBaseURL(movieId));
-//        Uri.Builder builder = uri.buildUpon();
-//        builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
-//        uri = builder.build();
-//        return uri.toString();
-//    }
-//
-//    private String getMovieTrailersUrl(String movieId)  {
-//
-//        Uri uri = Uri.parse(getMovieTrailersBaseURL(movieId));
-//        Uri.Builder builder = uri.buildUpon();
-//        builder.appendQueryParameter("api_key", BuildConfig.THE_MOVIE_DB_API_KEY);
-//        uri = builder.build();
-//        return uri.toString();
-//    }
-
-//    private String getMovieReviewsBaseURL(String movieID){
-//        return "http://api.themoviedb.org/3/movie/" + movieID + "/reviews?";
-//    }
-//
-//    private String getMovieTrailersBaseURL(String movieID){
-//        return "http://api.themoviedb.org/3/movie/" + movieID + "/trailers?";
-//    }
 
     private void getMovieFromParcelableExtra() {
 

@@ -11,7 +11,7 @@ import com.example.android.popularmovies.app.MoviesContract.ReviewEntry;
 
 public class MoviesDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     static final String DATABASE_NAME = "movie.db";
 
@@ -57,10 +57,10 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
                 TrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
 
                 TrailerEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL , " +
-                TrailerEntry.COLUMN_NAME + " TEXT NOT NULL , " +
-                TrailerEntry.COLUMN_SIZE + " TEXT NOT NULL , " +
+                TrailerEntry.COLUMN_NAME + " TEXT , " +
+                TrailerEntry.COLUMN_SIZE + " TEXT , " +
                 TrailerEntry.COLUMN_SOURCE + " TEXT NOT NULL , " +
-                TrailerEntry.COLUMN_TYPE + " TEXT NOT NULL , " +
+                TrailerEntry.COLUMN_TYPE + " TEXT  , " +
 
                 " FOREIGN KEY (" + TrailerEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                 MovieEntry.TABLE_NAME + " (" + MovieEntry.COLUMN_MOVIE_ID + "), " +
@@ -76,9 +76,9 @@ public class MoviesDbHelper extends SQLiteOpenHelper {
 
                 ReviewEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL , " +
                 ReviewEntry.COLUMN_REVIEW_ID + " TEXT NOT NULL , " +
-                ReviewEntry.COLUMN_AUTHOR + " TEXT NOT NULL , " +
+                ReviewEntry.COLUMN_AUTHOR + " TEXT , " +
                 ReviewEntry.COLUMN_CONTENT + " TEXT NOT NULL , " +
-                ReviewEntry.COLUMN_URL + " TEXT NOT NULL , " +
+                ReviewEntry.COLUMN_URL + " TEXT , " +
 
                 " FOREIGN KEY (" + ReviewEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                 MovieEntry.TABLE_NAME + " (" + MovieEntry.COLUMN_MOVIE_ID + "), " +

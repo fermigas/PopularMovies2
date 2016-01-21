@@ -230,7 +230,7 @@ public class MovieProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
-            case REVIEWS: {
+            case REVIEWS: {  // TODO  Fix Insert Bug; sometimes data exists already
                 long _id = db.insert(MoviesContract.ReviewEntry.TABLE_NAME, null, values);
                 if (_id > 0)
                     returnUri = MoviesContract.ReviewEntry.buildReviewUri (_id);

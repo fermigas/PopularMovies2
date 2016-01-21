@@ -1,10 +1,12 @@
 package com.example.android.popularmovies.app;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -46,7 +48,16 @@ public class MovieTrailersCustomAdapter extends BaseAdapter {
                 (MovieTrailersResponse.YoutubeEntity) getItem(position);
 
         TextView trailer = (TextView) rowView.findViewById(R.id.list_item_movie_trailer_textview);
-        trailer.setText("https://www.youtube.com/watch?v=" + item.getSource());
+       //  trailer.setText("https://www.youtube.com/watch?v=" + item.getSource());
+       // trailer.setText(item.getName());
+
+
+        String uri = "@drawable/play_icon.png";
+        int imageResource = mContext.getResources().getIdentifier(uri, null, mContext.getPackageName());
+        ImageView playButton = (ImageView) rowView.findViewById(R.id.list_item_movie_trailer_imageview);
+        Drawable res = mContext.getResources().getDrawable(imageResource);
+        playButton.setImageDrawable(res);
+
 
         return rowView;
     }

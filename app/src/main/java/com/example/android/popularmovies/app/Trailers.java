@@ -72,11 +72,27 @@ public class Trailers {
                                 MovieTrailersResponse.YoutubeEntity yte) {
 
         ContentValues trailerValues = new ContentValues();
+
         trailerValues.put(MoviesContract.TrailerEntry.COLUMN_MOVIE_ID, mtr.getId());
-        trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, yte.getName());
-        trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, yte.getSize());
+
+        if(yte.getName() == null)
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, "");
+        else
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, yte.getName());
+
+        if(yte.getName() == null)
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, "");
+        else
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, yte.getSize());
+
+        if(yte.getSource() == null)
+            return;  // There's no point in adding this record if there's no trailer to play
         trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SOURCE, yte.getSource());
-        trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, yte.getType());
+
+        if(yte.getType() == null)
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, "");
+        else
+            trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, yte.getType());
 
         mContext.getContentResolver().insert(MoviesContract.TrailerEntry.CONTENT_URI,
                 trailerValues);

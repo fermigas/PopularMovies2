@@ -27,6 +27,7 @@ public class Reviews {
 
             String url = getMovieReviewsUrl(Integer.toString(mMovieId));
 
+            // TODO  MAybe OKHTTP is faster?
             AsyncHttpClient client = new AsyncHttpClient();
             client.get(mContext, url, new AsyncHttpResponseHandler() {
                 @Override
@@ -74,12 +75,28 @@ public class Reviews {
 
             // TODO:  Sanitize Data
             ContentValues reviewValues = new ContentValues();
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, mrr.getId());
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, mr.getId());
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, mr.getAuthor());
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, mr.getContent());
-            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_URL, mr.getUrl());
 
+            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, mrr.getId());
+
+            if(mr.getId() == null )
+                return;  // If there's no review ID, don't try to insert it
+            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_REVIEW_ID, mr.getId());
+
+            if(mr.getAuthor() == null) // Don't keep null values
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, "");
+            else
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_AUTHOR, mr.getAuthor());
+
+            if(mr.getContent() == null )
+                return;  // If there's no content, don't try to insert it
+            reviewValues.put(MoviesContract.ReviewEntry.COLUMN_CONTENT, mr.getContent());
+
+            if(mr.getAuthor() == null) // Don't keep null values
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_URL, "");
+            else
+                reviewValues.put(MoviesContract.ReviewEntry.COLUMN_URL, mr.getUrl());
+
+            // TODO  Convert to Bulk Insert
             mContext.getContentResolver().insert(MoviesContract.ReviewEntry.CONTENT_URI,
                     reviewValues);
 

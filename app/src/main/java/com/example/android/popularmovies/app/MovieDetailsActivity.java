@@ -54,4 +54,6 @@ public class MovieDetailsActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+
 }
