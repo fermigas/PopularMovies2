@@ -492,11 +492,11 @@ public class MoviesFragment extends Fragment {
 
         getContext().getContentResolver().insert(MovieEntry.CONTENT_URI, movieValues);
 
-        Trailers trailers = new Trailers(getActivity(), mr.getId());
-        trailers.getTrailersFromWebAndInsertThemInDb();
-
-        Reviews reviews = new Reviews(getActivity(), mr.getId());
-        reviews.getReviewsFromWebAndInsertThemInDb();
+//        Trailers trailers = new Trailers(getActivity(), mr.getId());
+//        trailers.getTrailersFromWebAndInsertThemInDb();
+//
+//        Reviews reviews = new Reviews(getActivity(), mr.getId());
+//        reviews.getReviewsFromWebAndInsertThemInDb();
 
     }
 

@@ -93,73 +93,20 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieTrailers(View rootView) {
 
+
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
+        Trailers trailers = new Trailers(getActivity(), trailersListView, movie.getId());
+        trailers.setMovieTrailers();
 
-        Cursor cursor = null;
-        try {
-            cursor = getActivity().getContentResolver().query(
-                    TrailerEntry.buildTrailerWithMovieId(String.valueOf(movie.getId())),
-                    null, null, null, null);
-            if (cursor != null) {
-                cursor.moveToFirst();
-            }
-        } catch (Exception e) {
-        }
-
-        TrailersCursorAdapter tca = new TrailersCursorAdapter(getActivity(), cursor, 0);
-        trailersListView.setAdapter(tca);
-
-        trailersListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Intent intent = getActivity()
-                        .getPackageManager()
-                        .getLaunchIntentForPackage("com.google.android.youtube");
-
-                TextView sourceView = (TextView) view.findViewById(
-                        R.id.list_item_movie_trailer_url_textview);
-
-                String source = sourceView.getText().toString() ;
-                watchYoutubeVideo(source);
-
-            }
-        });
     }
 
 
-    private void watchYoutubeVideo(String source){
 
-        try{
-
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + source));
-            startActivity(intent);
-
-        }catch (ActivityNotFoundException e){
-
-            Intent intent=new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("http://www.youtube.com/watch?v="+source));
-
-            startActivity(intent);
-        }
-    }
     private void showMovieReviews(View rootView) {
 
         reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
-
-        Cursor cursor = null;
-        try {
-            cursor = getActivity().getContentResolver().query(
-                    ReviewEntry.buildReviewWithMovieId(String.valueOf(movie.getId())),
-                    null, null, null, null);
-            if (cursor != null) {
-                cursor.moveToFirst();
-            }
-        } catch (Exception e) {
-        }
-
-        ReviewsCursorAdapter rca = new ReviewsCursorAdapter(getActivity(), cursor, 0);
-        reviewsListView.setAdapter(rca);
+        Reviews reviews = new Reviews(getActivity(), reviewsListView,  movie.getId());
+        reviews.setMovieReviews();
 
     }
 

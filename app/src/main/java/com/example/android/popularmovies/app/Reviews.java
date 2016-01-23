@@ -2,7 +2,12 @@ package com.example.android.popularmovies.app;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.view.View;
+import android.widget.ListView;
 
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
@@ -14,16 +19,50 @@ public class Reviews {
 
 
         Context mContext;
+        ListView mReviewsListView;
         int mMovieId;
+
         private MovieReviewsResponse reviewsResponse;
 
-        public Reviews(Context mContext, int mMovieId) {
+        public Reviews(Context mContext, ListView reviewsListView,  int movieId) {
             this.mContext = mContext;
-            this.mMovieId = mMovieId;
+            this.mReviewsListView = reviewsListView;
+            this.mMovieId = movieId;
         }
 
+    public void setMovieReviews(){
 
-        public void getReviewsFromWebAndInsertThemInDb() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String dataSource = prefs.getString(mContext.getString(R.string.pref_data_source_key),
+                "network");
+
+        if (dataSource.equals("network") )
+            getReviewsFromWebAndInsertThemInDb();
+        else
+            setReviewListAdapter();
+
+    }
+
+
+    private void setReviewListAdapter(){
+
+        Cursor cursor = null;
+        try {
+            cursor = mContext.getContentResolver().query(
+                    MoviesContract.ReviewEntry.buildReviewWithMovieId(String.valueOf(mMovieId)),
+                    null, null, null, null);
+            if (cursor != null) {
+                cursor.moveToFirst();
+            }
+        } catch (Exception e) {
+        }
+
+        ReviewsCursorAdapter rca = new ReviewsCursorAdapter(mContext, cursor, 0);
+        mReviewsListView.setAdapter(rca);
+
+    }
+
+    public void getReviewsFromWebAndInsertThemInDb() {
 
             String url = getMovieReviewsUrl(Integer.toString(mMovieId));
 
@@ -36,11 +75,14 @@ public class Reviews {
                     Gson gson = new Gson();
                     reviewsResponse = gson.fromJson(responsestr, MovieReviewsResponse.class);
                     insertReviews(reviewsResponse);
+                    setReviewListAdapter();
                 }
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody,
                                       Throwable error) {   }
+
+
             });
 
         }
