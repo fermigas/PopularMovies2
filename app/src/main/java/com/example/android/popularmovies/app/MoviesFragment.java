@@ -69,6 +69,14 @@ public class MoviesFragment extends Fragment {
 
     final Set<Target> targetHashSet = new HashSet<>();
 
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState);
+    }
+
+
     public MoviesFragment() {
     }
 
@@ -119,6 +127,21 @@ public class MoviesFragment extends Fragment {
         } else {  // Because settings might have changed
             reattachGridViewCursorAdapter();
         }
+
+        mGridView.setSelection(1);
+        mGridView.requestFocusFromTouch();
+        mGridView.setSelection(1);
+    }
+
+    private void resetPostion() {
+
+        mGridView.post(new Runnable() {
+
+            @Override
+            public void run () {
+                mGridView.setSelection(1);
+            }
+        } );
 
     }
 
@@ -199,7 +222,12 @@ public class MoviesFragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 if(currentlyFetchingMovies)
                     return;
-                startMovieDetailsActivity(position);
+
+                ((Callback) getActivity())
+                        .onItemSelected(getMovieFromCursor(position),
+                                getFavoritesState(position));
+
+                // startMovieDetailsActivity(position);
             }
         });
     }

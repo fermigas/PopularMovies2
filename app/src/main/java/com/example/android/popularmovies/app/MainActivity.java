@@ -16,23 +16,41 @@
 package com.example.android.popularmovies.app;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements MoviesFragment.Callback {
+
+    private static final String MOVIEDETAILDFRAGMENT_TAG = "MDFTAG";
+    private boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new MoviesFragment())
-                    .commit();
+
+        if(findViewById(R.id.movie_detail_container) != null){
+            mTwoPane = true;
+            if(savedInstanceState == null){
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.movie_detail_container,
+                                new MovieDetailsFragment(), MOVIEDETAILDFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            mTwoPane = false;
         }
+
+
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.container, new MoviesFragment())
+//                    .commit();
+//        }
     }
 
     @Override
@@ -53,4 +71,31 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+
+
+    @Override
+    public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState) {
+        if (mTwoPane) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putParcelable("movie", movie);
+            args.putBoolean("favorite_state", favoriteState);
+
+            MovieDetailsFragment fragment = new MovieDetailsFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, MOVIEDETAILDFRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, MovieDetailsActivity.class);
+            intent.putExtra("movie", movie);
+            intent.putExtra("favorite_state", favoriteState);
+            startActivity(intent);
+        }
+
+    }
 }

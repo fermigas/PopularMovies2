@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,9 +50,21 @@ public class MovieDetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        Bundle arguments = getArguments();
+        if(arguments != null) {
+            movie = arguments.getParcelable("movie");
+            favoriteState = arguments.getBoolean("favorite_state");
+        }
+        else
+            getMovieFromParcelableExtra();
+
+
         View rootView = inflater.inflate(R.layout.details_fragment, container, false);
 
-        getMovieFromParcelableExtra();
+        // on startup, no movie has been selected yet
+        if(movie == null)
+            return rootView;
+
         setFavoritesToggleButtonInitialState(rootView);
         showMovieData(rootView);
         showMovieTrailers(rootView);
@@ -93,13 +106,11 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieTrailers(View rootView) {
 
-
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
         Trailers trailers = new Trailers(getActivity(), trailersListView, movie.getId());
         trailers.setMovieTrailers();
 
     }
-
 
 
     private void showMovieReviews(View rootView) {
@@ -163,7 +174,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showScrollingMovieOverview(View rootView) {
         TextView tv = ((TextView) rootView.findViewById(R.id.details_overview));
- //       tv.setMovementMethod(new ScrollingMovementMethod());
+        tv.setMovementMethod(new ScrollingMovementMethod());
         tv.setText(movie.getOverview());
     }
 
