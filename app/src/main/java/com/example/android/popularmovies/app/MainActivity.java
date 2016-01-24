@@ -45,12 +45,6 @@ public class MainActivity extends ActionBarActivity implements MoviesFragment.Ca
             mTwoPane = false;
         }
 
-
-//        if (savedInstanceState == null) {
-//            getSupportFragmentManager().beginTransaction()
-//                    .add(R.id.container, new MoviesFragment())
-//                    .commit();
-//        }
     }
 
     @Override
@@ -77,16 +71,11 @@ public class MainActivity extends ActionBarActivity implements MoviesFragment.Ca
     @Override
     public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState) {
         if (mTwoPane) {
-            // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
             Bundle args = new Bundle();
             args.putParcelable("movie", movie);
             args.putBoolean("favorite_state", favoriteState);
-
             MovieDetailsFragment fragment = new MovieDetailsFragment();
             fragment.setArguments(args);
-
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.movie_detail_container, fragment, MOVIEDETAILDFRAGMENT_TAG)
                     .commit();

@@ -58,7 +58,6 @@ public class MovieDetailsFragment extends Fragment {
         else
             getMovieFromParcelableExtra();
 
-
         View rootView = inflater.inflate(R.layout.details_fragment, container, false);
 
         // on startup, no movie has been selected yet
@@ -182,6 +181,7 @@ public class MovieDetailsFragment extends Fragment {
         ((TextView) rootView.findViewById(R.id.details_title)).setText(movie.getTitle());
     }
 
+    // TODO:  Get from database, not network
     private void showMoviePoster(View rootView) {
         String fullPosterPath =
                 getContext().getString(R.string.tmdb_base_image_url) +

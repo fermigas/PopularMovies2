@@ -6,6 +6,7 @@
     android:verticalSpacing="0dp"
     android:horizontalSpacing="0dp"
     android:id="@+id/gridview_movie"
+
     android:background="@android:color/black">
 
 </GridView>

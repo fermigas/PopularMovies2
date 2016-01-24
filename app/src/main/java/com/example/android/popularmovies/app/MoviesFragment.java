@@ -53,29 +53,19 @@ import java.util.Set;
 public class MoviesFragment extends Fragment {
 
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
-
     private int currentPage = 1;
     private Boolean currentlyFetchingMovies = true;
-
     private Boolean morePagesOfMoviesLeftToGet = true;
-
     private MoviesCursorAdapter moviesCursorAdapter;
     SharedPreferences prefs;
     private View rootView;
     private GridView mGridView;
-    private Target target;
-
     private MovieReviewsResponse reviewsResponse;
-
     final Set<Target> targetHashSet = new HashSet<>();
 
     public interface Callback {
-        /**
-         * DetailFragmentCallback for when an item has been selected.
-         */
         public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState);
     }
-
 
     public MoviesFragment() {
     }
@@ -120,40 +110,39 @@ public class MoviesFragment extends Fragment {
 
     @Override
     public void onResume() {
-        super.onResume();
+            super.onResume();
 
-        if (getDataSource().equals("network")) {
-            getFirstPageOfMovies();
-        } else {  // Because settings might have changed
-            reattachGridViewCursorAdapter();
+            if (getDataSource().equals("network")) {
+                getFirstPageOfMovies();
+            } else {  // Because settings might have changed
+                reattachGridViewCursorAdapter();
+            }
+
         }
 
-        mGridView.setSelection(1);
-        mGridView.requestFocusFromTouch();
-        mGridView.setSelection(1);
-    }
-
-    private void resetPostion() {
-
-        mGridView.post(new Runnable() {
-
-            @Override
-            public void run () {
-                mGridView.setSelection(1);
-            }
-        } );
-
-    }
 
     private void reattachGridViewCursorAdapter() {
         Cursor cursor = getCursorWithCurrentPreferences();
-        if (cursor != null)
+        if (cursor != null) {
+            cursor.moveToLast();
             cursor.moveToFirst();
+        }
         moviesCursorAdapter.changeCursor(cursor);
-        moviesCursorAdapter.notifyDataSetChanged();
         setMovieItemClickListener(mGridView);
         setUpMovieGridviewEndlessScrolling(mGridView);
+        selectFirstMovieToFillOutDetail();
         currentlyFetchingMovies = false;
+    }
+
+    private void selectFirstMovieToFillOutDetail() {
+
+        if(mGridView.getNumColumns() != 3)
+            return;  // Don't select unless we're using master/detail
+
+        MoviesResponse.ResultsEntity movie = getMovieFromCursor(1);
+        boolean favoriteState = getFavoritesState(1);
+        mGridView.setSelection(1);
+        ((Callback) getActivity()).onItemSelected(movie,  favoriteState);
     }
 
     public void getFirstPageOfMovies() {
@@ -226,8 +215,6 @@ public class MoviesFragment extends Fragment {
                 ((Callback) getActivity())
                         .onItemSelected(getMovieFromCursor(position),
                                 getFavoritesState(position));
-
-                // startMovieDetailsActivity(position);
             }
         });
     }
@@ -256,9 +243,7 @@ public class MoviesFragment extends Fragment {
 
     private boolean shouldWeFetchMoreMovies(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
-
         int last = firstVisibleItem + visibleItemCount;
-
 
         if (currentPage > 1 &&
                 visibleItemCount != 0
@@ -266,7 +251,6 @@ public class MoviesFragment extends Fragment {
                 && totalItemCount == last
                 && last == visibleItemCount))
             return false;
-
 
         return (last == totalItemCount) &&   // We've scrolled past the end of the grid view
                 !currentlyFetchingMovies &&        // We're not trying to grab movies already with
@@ -308,7 +292,6 @@ public class MoviesFragment extends Fragment {
                 cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE)),
                 cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_COUNT))
         );
-
 
         return movie;
     }
@@ -490,6 +473,7 @@ public class MoviesFragment extends Fragment {
 
         if (isLastResult) { // Change cursor after last result from a page has been downloaded
             reattachGridViewCursorAdapter();
+
         }
 
     }
@@ -519,12 +503,6 @@ public class MoviesFragment extends Fragment {
         movieValues.put(MovieEntry.COLUMN_POSTER_BITMAP, imageBytes);
 
         getContext().getContentResolver().insert(MovieEntry.CONTENT_URI, movieValues);
-
-//        Trailers trailers = new Trailers(getActivity(), mr.getId());
-//        trailers.getTrailersFromWebAndInsertThemInDb();
-//
-//        Reviews reviews = new Reviews(getActivity(), mr.getId());
-//        reviews.getReviewsFromWebAndInsertThemInDb();
 
     }
 
