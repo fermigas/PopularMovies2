@@ -124,7 +124,7 @@ public class Trailers {
         } catch (ActivityNotFoundException e) {
 
             Intent intent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("http://www.youtube.com/watch?v=" + source));
+                    Uri.parse(mContext.getString(R.string.you_tube_url) + source));
 
             mContext.startActivity(intent);
         }
@@ -152,7 +152,7 @@ public class Trailers {
             for (MovieTrailersResponse.YoutubeEntity yte : mtr.getYoutube()) {
                 addTrailerToDb(mtr, yte);
                 trailers.append(
-                        getMovieTrailersBaseURL(String.valueOf(mtr.getId())) +
+                        mContext.getString(R.string.you_tube_url) +
                                 yte.getSource() + "  ");
             }
         }
