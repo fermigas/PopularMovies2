@@ -21,33 +21,38 @@ import org.apache.http.Header;
 
 public class Trailers {
 
+    private MovieDetailsFragment movieDetailsFragment;
     Context mContext;
     ListView mTrailersListView;
     int mMovieId;
     private MovieTrailersResponse trailersResponse;
 
-    public Trailers(Context mContext, ListView trailersListView, int movieId) {
+
+    public Trailers(MovieDetailsFragment movieDetailsFragment, Context mContext, ListView trailersListView, int movieId) {
+        this.movieDetailsFragment = movieDetailsFragment;
         this.mContext = mContext;
         this.mTrailersListView = trailersListView;
         this.mMovieId = movieId;
+
     }
 
 
-    public void setMovieTrailers(){
+    public void setMovieTrailers() {
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        String dataSource = prefs.getString(mContext.getString(R.string.pref_data_source_key),
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String dataSource = preferences.getString(mContext.getString(R.string.pref_data_source_key),
                 "network");
 
-        if (dataSource.equals("network") )
+        if (dataSource.equals("network"))
             getTrailersFromWebAndInsertThemInDb();
         else
             setTrailersListAdapter();
 
+
     }
 
 
-    private void setTrailersListAdapter(){
+    private void setTrailersListAdapter() {
 
         Cursor cursor = null;
         try {
@@ -84,7 +89,8 @@ public class Trailers {
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody,
-                                  Throwable error) {   }
+                                  Throwable error) {
+            }
         });
 
     }
@@ -101,24 +107,24 @@ public class Trailers {
                 TextView sourceView = (TextView) view.findViewById(
                         R.id.list_item_movie_trailer_url_textview);
 
-                String source = sourceView.getText().toString() ;
+                String source = sourceView.getText().toString();
                 watchYoutubeVideo(source);
 
             }
         });
     }
 
-    private void watchYoutubeVideo(String source){
+    private void watchYoutubeVideo(String source) {
 
-        try{
+        try {
 
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + source));
             mContext.startActivity(intent);
 
-        }catch (ActivityNotFoundException e){
+        } catch (ActivityNotFoundException e) {
 
-            Intent intent=new Intent(Intent.ACTION_VIEW,
-                    Uri.parse("http://www.youtube.com/watch?v="+source));
+            Intent intent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://www.youtube.com/watch?v=" + source));
 
             mContext.startActivity(intent);
         }
@@ -141,11 +147,19 @@ public class Trailers {
 
     private void insertTrailers(MovieTrailersResponse mtr) {
 
+        StringBuilder trailers = new StringBuilder();
         if (!mtr.getYoutube().isEmpty()) {
             for (MovieTrailersResponse.YoutubeEntity yte : mtr.getYoutube()) {
                 addTrailerToDb(mtr, yte);
+                trailers.append(
+                        getMovieTrailersBaseURL(String.valueOf(mtr.getId())) +
+                                yte.getSource() + "  ");
             }
         }
+
+        movieDetailsFragment
+                .mShareActionProvider
+                .setShareIntent(movieDetailsFragment.createShareTrailerIntent(trailers.toString()));
     }
 
 
@@ -156,21 +170,21 @@ public class Trailers {
 
         trailerValues.put(MoviesContract.TrailerEntry.COLUMN_MOVIE_ID, mtr.getId());
 
-        if(yte.getName() == null)
+        if (yte.getName() == null)
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, "");
         else
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_NAME, yte.getName());
 
-        if(yte.getName() == null)
+        if (yte.getName() == null)
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, "");
         else
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SIZE, yte.getSize());
 
-        if(yte.getSource() == null)
+        if (yte.getSource() == null)
             return;  // There's no point in adding this record if there's no trailer to play
         trailerValues.put(MoviesContract.TrailerEntry.COLUMN_SOURCE, yte.getSource());
 
-        if(yte.getType() == null)
+        if (yte.getType() == null)
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, "");
         else
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, yte.getType());

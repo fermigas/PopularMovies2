@@ -32,8 +32,8 @@ public class Reviews {
 
     public void setMovieReviews(){
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        String dataSource = prefs.getString(mContext.getString(R.string.pref_data_source_key),
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        String dataSource = preferences.getString(mContext.getString(R.string.pref_data_source_key),
                 "network");
 
         if (dataSource.equals("network") )

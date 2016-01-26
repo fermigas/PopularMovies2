@@ -23,7 +23,7 @@ public class MovieCursorQueryParameters {
 
     public String getSelection(){
 
-        Log.v(LOG_TAG, "*** getSelection URI: "  + mUri.toString());
+        // Log.v(LOG_TAG, "*** getSelection URI: "  + mUri.toString());
 
 
         StringBuilder selection = new StringBuilder();
@@ -46,7 +46,7 @@ public class MovieCursorQueryParameters {
         if ( dataSource != null)
             selection.insert(0, dataSource + appendAndIfNeeded(selection));
 
-        Log.v(LOG_TAG, "*** getSelection string: " + selection.toString());
+        // Log.v(LOG_TAG, "*** getSelection string: " + selection.toString());
 
         if(selection.toString().equals(""))
             return null;  // Makes sure the cursor has a "no args" case
@@ -96,7 +96,7 @@ public class MovieCursorQueryParameters {
             selectionArgs = null;  // Makes sure the cursor has a "no args" case
 
 
-        Log.v(LOG_TAG, "*** getSelectionArgs : "  + selectionArgsList.toString());
+       //  Log.v(LOG_TAG, "*** getSelectionArgs : "  + selectionArgsList.toString());
 
         return selectionArgs;
     }

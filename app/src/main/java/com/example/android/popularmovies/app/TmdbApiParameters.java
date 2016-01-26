@@ -16,14 +16,14 @@ public class TmdbApiParameters {
     int mcurrentPage = 1;
     private Uri.Builder builder;
     private Uri uri;
-    private SharedPreferences prefs;
+    private SharedPreferences sharedPreferences;
 
     TmdbApiParameters(Activity activity, int currentPage){
         this.mActivity = activity;
         this.mcurrentPage = currentPage;
         uri = Uri.parse(getBaseURL());
         builder = uri.buildUpon();
-        prefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
     }
 
 
@@ -79,13 +79,13 @@ public class TmdbApiParameters {
          builder.appendQueryParameter("page", String.valueOf(mcurrentPage));
     }
 
-    private String getPeriodPreferences() { return   prefs.getString(mActivity.getString(R.string.pref_period_key), "all"); }
+    private String getPeriodPreferences() { return   sharedPreferences.getString(mActivity.getString(R.string.pref_period_key), "all"); }
 
 
     private String getGenresAsCommaSeparatedNumbers() {
 
         String genres;
-        Set<String> genresSet = prefs.getStringSet("genre_ids", null);
+        Set<String> genresSet = sharedPreferences.getStringSet("genre_ids", null);
         if ( genresSet != null && !genresSet.isEmpty()  )
            genres = genresSet.toString().replaceAll("\\s+", "").replace("[", "").replace("]", "");
         else
@@ -98,8 +98,8 @@ public class TmdbApiParameters {
        return mActivity.getString(R.string.tmdb_base_url);
     }
 
-    private String getSortOrder(){ return  prefs.getString( mActivity.getString(R.string.pref_sort_order_key), mActivity.getString(R.string.pref_sort_order_most_popular)); }
+    private String getSortOrder(){ return  sharedPreferences.getString( mActivity.getString(R.string.pref_sort_order_key), mActivity.getString(R.string.pref_sort_order_most_popular)); }
 
-    private String getVoteCount(){  return  prefs.getString( mActivity.getString(R.string.pref_vote_count_key),  mActivity.getString(R.string.pref_vote_count_value_0)); }
+    private String getVoteCount(){  return  sharedPreferences.getString( mActivity.getString(R.string.pref_vote_count_key),  mActivity.getString(R.string.pref_vote_count_value_0)); }
 
 }

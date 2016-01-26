@@ -1,19 +1,19 @@
 package com.example.android.popularmovies.app;
 
-import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -22,16 +22,6 @@ import android.widget.ToggleButton;
 
 import com.squareup.picasso.Picasso;
 
-import static com.example.android.popularmovies.app.MoviesContract.ReviewEntry;
-import static com.example.android.popularmovies.app.MoviesContract.TrailerEntry;
-
-// TODO Organize movie details fragment layout to support
-//         App Bar
-//         Favorites Button
-//         Shrunken Overview
-//         Trailers section
-//         Reviews Section
-// TODO Add setting to chose number of movie columns shown (1,2,3,4)?  Tablet could be a problem
 
 public class MovieDetailsFragment extends Fragment {
 
@@ -42,13 +32,28 @@ public class MovieDetailsFragment extends Fragment {
     private ListView reviewsListView;
     boolean favoriteState;
 
+    public static final String TRAILER_SHARE_HASHTAG = "#PopularMoviesTrailer";
+    public ShareActionProvider mShareActionProvider;
+    private View rootView;
 
-    public MovieDetailsFragment() {
+
+    public MovieDetailsFragment(){}
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Log.v(LOG_TAG, "***  Entering onCreate()");
+
         setHasOptionsMenu(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        Log.v(LOG_TAG, "***  Entering onCreateView()");
+
 
         Bundle arguments = getArguments();
         if(arguments != null) {
@@ -58,7 +63,8 @@ public class MovieDetailsFragment extends Fragment {
         else
             getMovieFromParcelableExtra();
 
-        View rootView = inflater.inflate(R.layout.details_fragment, container, false);
+        rootView = inflater.inflate(R.layout.details_fragment, container, false);
+        trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
 
         // on startup, no movie has been selected yet
         if(movie == null)
@@ -66,12 +72,21 @@ public class MovieDetailsFragment extends Fragment {
 
         setFavoritesToggleButtonInitialState(rootView);
         showMovieData(rootView);
-        showMovieTrailers(rootView);
         showMovieReviews(rootView);
 
         setToggleButtonHandler(rootView);
 
+
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Log.v(LOG_TAG, "***  Entering onResume()");
+
+
     }
 
     private void setToggleButtonHandler(View rootView) {
@@ -93,7 +108,7 @@ public class MovieDetailsFragment extends Fragment {
         ContentValues movieValues = new ContentValues();
         movieValues.put(MoviesContract.MovieEntry.COLUMN_FAVORITE, favoriteState);
 
-        int rowsUpdated = getContext().getContentResolver()
+        int rowsUpdated = getActivity().getContentResolver()
                 .update(MoviesContract.MovieEntry.CONTENT_URI,
                         movieValues,
                         MoviesContract.MovieEntry.COLUMN_MOVIE_ID + " = ? ",
@@ -103,13 +118,6 @@ public class MovieDetailsFragment extends Fragment {
     }
 
 
-    private void showMovieTrailers(View rootView) {
-
-        trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
-        Trailers trailers = new Trailers(getActivity(), trailersListView, movie.getId());
-        trailers.setMovieTrailers();
-
-    }
 
 
     private void showMovieReviews(View rootView) {
@@ -184,19 +192,47 @@ public class MovieDetailsFragment extends Fragment {
     // TODO:  Get from database, not network
     private void showMoviePoster(View rootView) {
         String fullPosterPath =
-                getContext().getString(R.string.tmdb_base_image_url) +
-                        getContext().getString(R.string.tmdb_image_size_342) +
+                getActivity().getString(R.string.tmdb_base_image_url) +
+                        getActivity().getString(R.string.tmdb_image_size_342) +
                         movie.getPoster_path();
         ImageView imageView = (ImageView) rootView.findViewById(R.id.details_movie_poster);
-        Picasso.with(getContext()).load(fullPosterPath).into(imageView);
+        Picasso.with(getActivity()).load(fullPosterPath).into(imageView);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.details_fragment_menu, menu);
 
+        Log.v(LOG_TAG, "***  Entering onCreateOptionsMenu()");
+
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        mShareActionProvider.setShareIntent(createShareTrailerIntent(""));
+
+//        new ShareActionProvider(getActivity()).setShareIntent(createShareTrailerIntent());
+        if(movie != null)
+            showMovieTrailers();
+
+        super.onCreateOptionsMenu(menu, inflater);
+
     }
 
+    private void showMovieTrailers() {
+
+        trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
+        Trailers trailers = new Trailers(this, getActivity(), trailersListView, movie.getId());
+        trailers.setMovieTrailers();
+
+    }
+
+
+    public Intent createShareTrailerIntent(String trailers) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags((Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET));
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, trailers + TRAILER_SHARE_HASHTAG);
+        return shareIntent;
+    }
 
     public void setFavoriteState(boolean favoriteState) {
         this.favoriteState = favoriteState;
@@ -205,4 +241,6 @@ public class MovieDetailsFragment extends Fragment {
     public boolean getFavoriteState() {
         return favoriteState;
     }
+
+
 }

@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 public class TrailersCursorAdapter extends CursorAdapter {
 
+
     public TrailersCursorAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
