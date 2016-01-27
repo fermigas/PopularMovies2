@@ -1,5 +1,4 @@
-Popular Movies, Stage 2
-========================
+#Popular Movies, Stage 2
 
 Popular Movies is an Android app built for the Udacity course
 
@@ -7,82 +6,75 @@ Popular Movies is an Android app built for the Udacity course
 
 It shows data on popular movies from themoviedb.org.   
 
-----------------------------------------
-Features New to Popular Movies, Stage 2
-----------------------------------------
+##Features New to Popular Movies, Stage 2
 
-Scroll through a grid of over 200,000 movie posters!
-Read reviews of movies
-Easily build a list of your favorite movies and browse it offline
-Play Trailers
+- Scroll through a grid of over 200,000 movie posters!
+- Read reviews of movies
+- Easily build a list of your favorite movies and browse it offline
+- Play Trailers
+- Mark and sort by your favorite movies
+- Share trailers with friends on many social media outlets!
+- Now supports Android Tablets - *Classy master/detail view in portrait and landscape!*
+- Now follows Android's beautiful new Material Design guidelines
 
-Now supports Android Tablets
-    Classy master/detail view
-Now follows Android's beautiful new Material Design guidelines
+###Several features have been added which aren't part of the Udacity Course
 
-See the help page for more details
-    (place attribution here)
+**Sort movies by:**
 
+- Latest Releases
+- Highest Gross  (not supported in cache)
+- Primary Release Dates (Newest and Oldest)
+- Alphabetical
 
-Several features have been added which aren't part of the Udacity Course:
+**Filter movies by**
 
-Show movies:
-    Now Playing
+- Number of ratings
+- Date Released
+- Genres
 
-Filter movies by database keys:
-    Average Rating
-    Number of ratings
-    Date Released
-    Genres
+**Other Novelties!**
 
-Search movies
-    By Title
-    By Keyword
+- Good behavior generally when offline, movies cached in a database
+- Reset settings to defaults
 
-Show extra details:
-    Number of ratings
-    Out on Video?
-    Genre
+###The following concepts, technologies and libraries were used in Popular Movies, Stage 2:
 
-Good behavior generally when offline
-Snazzy new icons!
+- **Android Studio 2.0** preview versions 3-7 with *Amazing* instant changes.
+- SQL Lite Database
+- Content Providers
+- OkHttp
+- GSON
+- AppCompat
+- Loopj
+- httpcore
+- cursors/cursor adapters
+- cursor loaders
+- Android Test
+- junit
+- ShareActionProvider
 
-The following concepts, technologies and libraries were used in Popular Movies, Stage 2:
+##Features in Popular Movies, Stage 1
 
-SQL Lite Database
-Content Providers
-Recycler Views
-AppCompat
-OkHttp
-GSON
-Butterknife
+- Scroll through a grid of 20 movie posters for themoviedb.org
+- Sort movies by popularity or rating
+- See details about movies:  Release Date, Average Rating, Overview
 
------------------------------------
-Features in Popular Movies, Stage 1
------------------------------------
+###The following Android concepts, technologies and libraries were used in Popular Movies, Stage 1:
 
-Scroll through a grid of 20 movie posters for themoviedb.org
-Sort movies by popularity or rating
-See details about movies:
-    Release Date
-    Average Rating
-    Overview
+- Custom ArrayAdapters
+- Percelables and SaveInstanceState()
+- HTTP Networking / AsyncTask
+- JSON Parsing
+- Shared Preference
+- Portrait/Landscape Layouts
+- GridView
+- Picasso  (Graphics downloading Library)
+- Gradle
+- Android Studio 2.0 (preview) and emulators
+- Preferences
+- logging/debugging
 
-The following Android concepts, technologies and libraries were used in Popular Movies, Stage 1:
-
-Custom ArrayAdapters
-Percelables and SaveInstanceState()
-HTTP Networking / AsyncTask
-JSON Parsing
-Shared Preference
-Portrait/Landscape Layouts
-GridView
-Picasso  (Graphics downloading Library)
-Gradle
-Android Studio 2.0 (preview) and emulators
-
-Building and Running
-=====================
+##Building and Running
 
 In order to get this project  to build and run, you'll need an API key from themoviedb.org.   
 
