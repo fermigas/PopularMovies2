@@ -21,15 +21,14 @@ import com.squareup.picasso.Picasso;
 public class MovieDetails {
 
     private final Context mContext;
-    private final MoviesResponse.ResultsEntity mMovie;
+    private final String mMovieId;
     private boolean mFavoriteState;
     private final View mRootView;
     private Cursor mCursor;
 
-    public MovieDetails(Context context, MoviesResponse.ResultsEntity movie, boolean favoriteState, View rootView) {
+    public MovieDetails(Context context, String movieId,  View rootView) {
         this.mContext = context;
-        this.mMovie = movie;
-        this.mFavoriteState = favoriteState;
+        this.mMovieId = movieId;
         this.mRootView = rootView;
 
     }
@@ -54,7 +53,7 @@ public class MovieDetails {
         Cursor cursor = null;
         try {
             cursor = mContext.getContentResolver().query(
-                    MovieEntry.buildMovieWithMovieId(String.valueOf(mMovie.getId())),
+                    MovieEntry.buildMovieWithMovieId(mMovieId),
                     null, null, null, null);
             if (cursor != null)
                 cursor.moveToFirst();
@@ -138,7 +137,7 @@ public class MovieDetails {
                 .update(MovieEntry.CONTENT_URI,
                         movieValues,
                         MovieEntry.COLUMN_MOVIE_ID + " = ? ",
-                        new String[]{String.valueOf(mMovie.getId())}
+                        new String[]{String.valueOf(mMovieId)}
                 );
 
     }

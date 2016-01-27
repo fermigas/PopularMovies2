@@ -35,61 +35,47 @@ public class MovieDetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 //        Log.v(LOG_TAG, "***  Entering onCreateView()");
-        MoviesResponse.ResultsEntity movie = getPassedMovie();
-        boolean favoriteState = getPassedFavoriteState();
+        String movieId = getPassedMovieId();
 
         rootView = inflater.inflate(R.layout.details_fragment, container, false);
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
 
         // on startup, no movie has been selected yet in twoPane UIs
-        if(movie == null)
+        if(movieId == null)
             return rootView;
 
-        MovieDetails movieDetails = new MovieDetails(getActivity(), movie, favoriteState, rootView);
+        MovieDetails movieDetails = new MovieDetails(getActivity(), movieId, rootView);
         movieDetails.showMovieDetails();
 
         // Trailers are loaded in onCreateOptionsMenu due to
         //      ShareActionProvider concurrency considerations
 
-        showMovieReviews(movie);
+        showMovieReviews(movieId);
 
         return rootView;
     }
 
-    private MoviesResponse.ResultsEntity getPassedMovie() {
+    private String getPassedMovieId() {
         Bundle arguments = getArguments();
         if(arguments != null) {
-            return arguments.getParcelable("movie");
+            return arguments.getString("movie_id");
         }
         else {
             Intent intent = getActivity().getIntent();
-            if (intent != null && intent.hasExtra("movie"))
-                return intent.getParcelableExtra("movie");
+            if (intent != null && intent.hasExtra("movie_id"))
+                return intent.getStringExtra("movie_id");
         }
 
         return null;
     }
 
-    private boolean getPassedFavoriteState() {
-        Bundle arguments = getArguments();
-        if(arguments != null) {
-            return arguments.getBoolean("favorite_state");
-        }
-        else {
-            Intent intent = getActivity().getIntent();
-            if (intent != null && intent.hasExtra("favorite_state"))
-                return intent.getBooleanExtra("favorite_state", false);
-        }
-
-        return false;
-    }
 
 
 
-    private void showMovieReviews(MoviesResponse.ResultsEntity movie) {
+    private void showMovieReviews(String movieId) {
 
         reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
-        Reviews reviews = new Reviews(getActivity(), reviewsListView,  movie.getId());
+        Reviews reviews = new Reviews(getActivity(), reviewsListView,  movieId);
         reviews.setMovieReviews();
 
     }
@@ -104,15 +90,15 @@ public class MovieDetailsFragment extends Fragment {
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
         mShareActionProvider.setShareIntent(createShareTrailerIntent(""));
 
-        if(getPassedMovie() != null)
-            showMovieTrailers(getPassedMovie());
+        if(getPassedMovieId() != null)
+            showMovieTrailers(getPassedMovieId());
 
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    private void showMovieTrailers(MoviesResponse.ResultsEntity movie) {
+    private void showMovieTrailers(String movieId) {
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
-        Trailers trailers = new Trailers(this, getActivity(), trailersListView, movie.getId());
+        Trailers trailers = new Trailers(this, getActivity(), trailersListView, movieId);
         trailers.setMovieTrailers();
     }
 

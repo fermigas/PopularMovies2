@@ -20,11 +20,11 @@ public class Reviews {
 
         Context mContext;
         ListView mReviewsListView;
-        int mMovieId;
+        String mMovieId;
 
         private MovieReviewsResponse reviewsResponse;
 
-        public Reviews(Context mContext, ListView reviewsListView,  int movieId) {
+        public Reviews(Context mContext, ListView reviewsListView,  String movieId) {
             this.mContext = mContext;
             this.mReviewsListView = reviewsListView;
             this.mMovieId = movieId;
@@ -64,7 +64,7 @@ public class Reviews {
 
     public void getReviewsFromWebAndInsertThemInDb() {
 
-            String url = getMovieReviewsUrl(Integer.toString(mMovieId));
+            String url = getMovieReviewsUrl(mMovieId);
 
             AsyncHttpClient client = new AsyncHttpClient();
             client.get(mContext, url, new AsyncHttpResponseHandler() {

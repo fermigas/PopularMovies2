@@ -67,11 +67,10 @@ public class MainActivity extends ActionBarActivity implements MoviesFragment.Ca
 
 
     @Override
-    public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState) {
+    public void onItemSelected(String movieId) {
         if (mTwoPane) {
             Bundle args = new Bundle();
-            args.putParcelable("movie", movie);
-            args.putBoolean("favorite_state", favoriteState);
+            args.putString("movie_id", movieId);
             MovieDetailsFragment fragment = new MovieDetailsFragment();
             fragment.setArguments(args);
             getSupportFragmentManager().beginTransaction()
@@ -79,8 +78,7 @@ public class MainActivity extends ActionBarActivity implements MoviesFragment.Ca
                     .commit();
         } else {
             Intent intent = new Intent(this, MovieDetailsActivity.class);
-            intent.putExtra("movie", movie);
-            intent.putExtra("favorite_state", favoriteState);
+            intent.putExtra("movie_id", movieId);
             startActivity(intent);
         }
 

@@ -74,7 +74,7 @@ public class MoviesFragment extends Fragment {
     private String mState = "";
 
     interface Callback {
-        public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState);
+        public void onItemSelected(String movieId);
     }
 
     public MoviesFragment() {
@@ -251,11 +251,10 @@ public class MoviesFragment extends Fragment {
         Cursor cursor = moviesCursorAdapter.getCursor();
         cursor.moveToFirst();
 
-        MoviesResponse.ResultsEntity movie = getMovieFromCursor();
-        boolean favoriteState = getFavoritesStateFromCursor();
+        String movieId = getMovieIdFromCursor();
         mGridView.smoothScrollToPosition(0);
         mGridView.setSelection(0);
-        ((Callback) getActivity()).onItemSelected(movie,  favoriteState);
+        ((Callback) getActivity()).onItemSelected(movieId);
     }
 
     private Cursor getCursorWithCurrentPreferences() {
@@ -317,8 +316,7 @@ public class MoviesFragment extends Fragment {
 
                 savedPosition = position;
                 ((Callback) getActivity())
-                        .onItemSelected(getMovieFromCursor(),
-                                getFavoritesStateFromCursor());
+                        .onItemSelected(getMovieIdFromCursor());
             }
         });
     }
@@ -387,6 +385,32 @@ public class MoviesFragment extends Fragment {
         );
 
         return movie;
+    }
+
+    private String getMovieIdFromCursor() {
+
+        Cursor cursor = moviesCursorAdapter.getCursor();
+
+        MoviesResponse.ResultsEntity movie = new MoviesResponse.ResultsEntity(
+                false,  // adult
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH)),
+                getGenreIdsAsInegerArrayList(
+                        cursor.getString(cursor.getColumnIndex(
+                                MovieEntry.COLUMN_GENRE_IDS))),
+                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_LANGUAGE)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW)),
+                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_POPULARITY)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_PATH)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE)),
+                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE)),
+                true, // video
+                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE)),
+                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_COUNT))
+        );
+
+        return String.valueOf(movie.getId());
     }
 
     private boolean getFavoritesStateFromCursor() {

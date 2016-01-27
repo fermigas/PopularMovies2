@@ -24,11 +24,11 @@ public class Trailers {
     private MovieDetailsFragment movieDetailsFragment;
     Context mContext;
     ListView mTrailersListView;
-    int mMovieId;
+    String mMovieId;
     private MovieTrailersResponse trailersResponse;
 
 
-    public Trailers(MovieDetailsFragment movieDetailsFragment, Context mContext, ListView trailersListView, int movieId) {
+    public Trailers(MovieDetailsFragment movieDetailsFragment, Context mContext, ListView trailersListView, String movieId) {
         this.movieDetailsFragment = movieDetailsFragment;
         this.mContext = mContext;
         this.mTrailersListView = trailersListView;
@@ -73,7 +73,7 @@ public class Trailers {
 
     public void getTrailersFromWebAndInsertThemInDb() {
 
-        String url = getMovieTrailersUrl(Integer.toString(mMovieId));
+        String url = getMovieTrailersUrl(mMovieId);
 
         AsyncHttpClient client = new AsyncHttpClient();
         client.get(mContext, url, new AsyncHttpResponseHandler() {
