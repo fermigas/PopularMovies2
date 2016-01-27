@@ -66,8 +66,6 @@ public class MainActivity extends ActionBarActivity implements MoviesFragment.Ca
     }
 
 
-
-
     @Override
     public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState) {
         if (mTwoPane) {

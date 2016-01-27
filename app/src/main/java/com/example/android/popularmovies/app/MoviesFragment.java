@@ -73,7 +73,7 @@ public class MoviesFragment extends Fragment {
     private boolean mJustRotated = false;
     private String mState = "";
 
-    public interface Callback {
+    interface Callback {
         public void onItemSelected(MoviesResponse.ResultsEntity movie, boolean favoriteState);
     }
 
@@ -90,14 +90,9 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outstate) {
         super.onSaveInstanceState(outstate);
-
-
         oldPrefs = prefs.getAll();
-
         outstate.putString("saved_prefs", oldPrefs.toString());
     }
-
-
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -111,25 +106,13 @@ public class MoviesFragment extends Fragment {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-
-    }
-
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Log.v(LOG_TAG, "***  Entering onCreate()");
-
-
-        prefs = PreferenceManager
-                .getDefaultSharedPreferences(getActivity());
-
+        //Log.v(LOG_TAG, "***  Entering onCreate()");
+        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         rootView = inflater.inflate(R.layout.movie_fragment, container, false);
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
-
 
         Cursor cursor = getCursorWithCurrentPreferences();
         moviesCursorAdapter = new MoviesCursorAdapter(getActivity(), cursor, 0);
@@ -143,17 +126,15 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onResume() {
             super.onResume();
+        //Log.v(LOG_TAG, "***  Entering onResume()");
 
-        Log.v(LOG_TAG, "***  Entering onResume()");
-
-
-            if (getDataSource().equals("network")) {
-                initializeMoviesGridFromNetwork();
-            } else {  // Cache  or Favorites
-                initializeMoviesGridFromCache();
-            }
-
+        if (getDataSource().equals("network")) {
+            initializeMoviesGridFromNetwork();
+        } else {  // Cache  or Favorites
+            initializeMoviesGridFromCache();
         }
+
+    }
 
     private void initializeMoviesGridFromCache() {
 
@@ -162,25 +143,25 @@ public class MoviesFragment extends Fragment {
             case "app_just_started":
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-                Log.v(LOG_TAG, "***  Cache, App Just Started, reatached, set first position");
+//                Log.v(LOG_TAG, "***  Cache, App Just Started, reatached, set first position");
                 break;
 
             case "rotated":  // Do nothing; no new selection
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-                Log.v(LOG_TAG, "***  Cache, rotated, did nothing");
+//                Log.v(LOG_TAG, "***  Cache, rotated, did nothing");
                 break;
 
             case "prefs_changed":
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-                Log.v(LOG_TAG, "***  Cache, prefs changed, reatached, set first position");
+//                Log.v(LOG_TAG, "***  Cache, prefs changed, reatached, set first position");
                 break;
 
             case "prefs_didnt_change":  // Do nothing; no new selection
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-                Log.v(LOG_TAG, "***  Cache, prefs didn't change, did nothing.");
+//                Log.v(LOG_TAG, "***  Cache, prefs didn't change, did nothing.");
                 break;
 
         }
@@ -193,22 +174,22 @@ public class MoviesFragment extends Fragment {
 
             case "app_just_started":
                 getFirstPageOfMovies();  // This will select the first movie
-                Log.v(LOG_TAG, "***  Network, App Just Started, Got First Page of Movies");
+//                Log.v(LOG_TAG, "***  Network, App Just Started, Got First Page of Movies");
                 break;
 
             case "rotated":  // Do nothing; no new selection
                 getFirstPageOfMovies(); // This will select the first movie
-                Log.v(LOG_TAG, "***  Network, rotated, did nothing");
+//                Log.v(LOG_TAG, "***  Network, rotated, did nothing");
                 break;
 
             case "prefs_changed":
                 getFirstPageOfMovies(); // This will select the first movie
-                Log.v(LOG_TAG, "***  Network, prefs changed, Got First Page of Movies.");
+//                Log.v(LOG_TAG, "***  Network, prefs changed, Got First Page of Movies.");
                 break;
 
             case "prefs_didnt_change":  // Do nothing; no new selection
                 getFirstPageOfMovies(); // This will select the first movie
-                Log.v(LOG_TAG, "***  Network, prefs didn't change, did nothing.");
+//                Log.v(LOG_TAG, "***  Network, prefs didn't change, did nothing.");
                 break;
 
         }
@@ -236,9 +217,7 @@ public class MoviesFragment extends Fragment {
     }
 
     private boolean didAppJustStart(Bundle savedInstanceState) {
-        if (savedInstanceState == null)
-            return true;
-        else return false;
+        return savedInstanceState == null;
     }
 
     public void getFirstPageOfMovies() {
@@ -249,7 +228,6 @@ public class MoviesFragment extends Fragment {
     }
 
     // This should only be called if prefs have changed or when the program opens
-
     private void reattachGridViewCursorAdapter() {
         Cursor cursor = getCursorWithCurrentPreferences();
         if (cursor != null) {
@@ -299,7 +277,6 @@ public class MoviesFragment extends Fragment {
         return cursor;
     }
 
-
     private Uri getUriFromPreferences() {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -314,11 +291,9 @@ public class MoviesFragment extends Fragment {
 
         String[] values = {dataSource, voteCount, timePeriods, genreIds, sortOrder};
 
-        Uri uri = MoviesContract.MovieEntry.buildMoviesUriWithQueryParameters(
+        return MovieEntry.buildMoviesUriWithQueryParameters(
                 MovieEntry.CONTENT_URI, keys, values
         );
-
-        return uri;
     }
 
     private String getGenresAsCommaSeparatedNumbers(SharedPreferences preferences) {
@@ -388,7 +363,6 @@ public class MoviesFragment extends Fragment {
 
     }
 
-
     private MoviesResponse.ResultsEntity getMovieFromCursor() {
 
         Cursor cursor = moviesCursorAdapter.getCursor();
@@ -419,8 +393,7 @@ public class MoviesFragment extends Fragment {
 
         Cursor cursor = moviesCursorAdapter.getCursor();
 
-        return ( (cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_FAVORITE)) == 1)
-                ? true : false );
+        return ((cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_FAVORITE)) == 1));
     }
 
     public ArrayList<Integer> getGenreIdsAsInegerArrayList(String genreIds) {
@@ -429,7 +402,7 @@ public class MoviesFragment extends Fragment {
             String[] strArray = genreIds
                     .replace("[", "").replace("]", "").replaceAll("\\s+", "")
                     .split(",");
-            ArrayList<Integer> intArrayList = new ArrayList<Integer>(strArray.length);
+            ArrayList<Integer> intArrayList = new ArrayList<>(strArray.length);
             for (String i : strArray) {
                 if (i != null && !i.isEmpty())
                     intArrayList.add(Integer.parseInt(i));
@@ -447,7 +420,6 @@ public class MoviesFragment extends Fragment {
         return preferences.getString(
                 getActivity().getString(R.string.pref_data_source_key), "network");
     }
-
 
     private void updateMovie(MoviesResponse.ResultsEntity mr, boolean isLastResult) {
 
@@ -479,16 +451,15 @@ public class MoviesFragment extends Fragment {
             String selection = MovieEntry.COLUMN_MOVIE_ID + " = ? ";
             String[] selectionArgs = new String[]{String.valueOf(mr.getId())};
 
-            cursor = getActivity().getContentResolver().query(
-                    MovieEntry.CONTENT_URI,
-                    null, selection, selectionArgs, null
-            );
+            cursor = getActivity().getContentResolver().query( MovieEntry.CONTENT_URI,
+                    null, selection, selectionArgs, null );
 
-            if (cursor != null && cursor.getCount() == 1) {
+            if (cursor != null && cursor.getCount() == 1)
                 return true;
-            } else {
-            }
+
         } catch (Exception e) {
+            return false;
+
         } finally {
             if (cursor != null) {
                 cursor.close();
@@ -497,7 +468,6 @@ public class MoviesFragment extends Fragment {
 
         return false;
     }
-
 
     private void fetchMoviesFromWeb(final int page) {
 
@@ -523,7 +493,6 @@ public class MoviesFragment extends Fragment {
 
     }
 
-
     private int insertOrUpdateMovies(MoviesResponse moviesResponse) {
         int totalResults = 0;  // Assume no results left to get
         if (!moviesResponse.getResults().isEmpty()) {
@@ -541,7 +510,6 @@ public class MoviesFragment extends Fragment {
 
         return totalResults;
     }
-
 
     private MoviesResponse getMoviesResponse(byte[] responseBody) {
         String responsestr = new String(responseBody);
@@ -561,7 +529,6 @@ public class MoviesFragment extends Fragment {
         Picasso.with(getActivity()).load(fullPosterPathUrl).into(bitmapTarget);
 
     }
-
 
     class BitmapTarget implements Target {
 
@@ -629,7 +596,6 @@ public class MoviesFragment extends Fragment {
         getActivity().getContentResolver().insert(MovieEntry.CONTENT_URI, movieValues);
 
     }
-
 
     public static byte[] getBitmapAsByteArray(Bitmap bitmap) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

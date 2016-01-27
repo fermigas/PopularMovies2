@@ -259,7 +259,6 @@ public class MovieCursorQueryParameters {
 
         String sortOrder = MoviesContract.MovieEntry.getSortOrderFromUri(mUri);
 
-        // TODO  Make revenue, PRIMARY_RELEASE dates work
         switch (sortOrder){
             case "none":
                 return "";

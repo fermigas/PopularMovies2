@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.ShareActionProvider;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,40 +27,25 @@ public class MovieDetailsFragment extends Fragment {
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
     private MoviesResponse.ResultsEntity movie;
+    boolean favoriteState;
     private ListView trailersListView;
     private ListView reviewsListView;
-    boolean favoriteState;
-
     public static final String TRAILER_SHARE_HASHTAG = "#PopularMoviesTrailer";
     public ShareActionProvider mShareActionProvider;
     private View rootView;
 
 
-    public MovieDetailsFragment(){}
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Log.v(LOG_TAG, "***  Entering onCreate()");
-
+//        Log.v(LOG_TAG, "***  Entering onCreate()");
         setHasOptionsMenu(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        Log.v(LOG_TAG, "***  Entering onCreateView()");
-
-
-        Bundle arguments = getArguments();
-        if(arguments != null) {
-            movie = arguments.getParcelable("movie");
-            favoriteState = arguments.getBoolean("favorite_state");
-        }
-        else
-            getMovieFromParcelableExtra();
+//        Log.v(LOG_TAG, "***  Entering onCreateView()");
+        getPassedData();
 
         rootView = inflater.inflate(R.layout.details_fragment, container, false);
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
@@ -73,21 +57,26 @@ public class MovieDetailsFragment extends Fragment {
         setFavoritesToggleButtonInitialState(rootView);
         showMovieData(rootView);
         showMovieReviews(rootView);
-
         setToggleButtonHandler(rootView);
-
 
         return rootView;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        Log.v(LOG_TAG, "***  Entering onResume()");
-
-
+    private void getPassedData() {
+        Bundle arguments = getArguments();
+        if(arguments != null) {
+            movie = arguments.getParcelable("movie");
+            setFavoriteState(arguments.getBoolean("favorite_state"));
+        }
+        else {
+            Intent intent = getActivity().getIntent();
+            if (intent != null && intent.hasExtra("movie"))
+                movie = intent.getParcelableExtra("movie");
+            if (intent != null && intent.hasExtra("favorite_state"))
+                setFavoriteState(intent.getBooleanExtra("favorite_state", false));
+        }
     }
+
 
     private void setToggleButtonHandler(View rootView) {
         ToggleButton toggle = (ToggleButton) rootView.findViewById(R.id.toggle_button);
@@ -117,9 +106,6 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
-
-
-
     private void showMovieReviews(View rootView) {
 
         reviewsListView = (ListView) rootView.findViewById(R.id.listview_movie_review);
@@ -128,36 +114,15 @@ public class MovieDetailsFragment extends Fragment {
 
     }
 
-    private void getMovieFromParcelableExtra() {
-
-        Intent intent = getActivity().getIntent();
-        if (intent != null && intent.hasExtra("movie"))
-            movie = intent.getParcelableExtra("movie");
-
-    }
-
     private void setFavoritesToggleButtonInitialState(View rootView) {
-
         ToggleButton toggle = (ToggleButton) rootView.findViewById(R.id.toggle_button);
-        setFavoriteState(getFavoriteStateExtra());
         toggle.setChecked(getFavoriteState());
-
     }
 
-    private boolean getFavoriteStateExtra() {
-
-        Intent intent = getActivity().getIntent();
-        if (intent != null && intent.hasExtra("favorite_state"))
-            return intent.getBooleanExtra("favorite_state", false);
-        else
-            return false;
-    }
 
     private void showMovieData(View rootView) {
-
         if (movie != null )
             showMovieDetails(rootView);
-
     }
 
     private void showMovieDetails(View rootView) {
@@ -176,7 +141,7 @@ public class MovieDetailsFragment extends Fragment {
 
     private void showMovieVoteAverage(View rootView) {
         ((TextView) rootView.findViewById(R.id.details_rating))
-                .setText(movie.getVote_average() + "/10");
+                .setText(movie.getVote_average() + getActivity().getString(R.string.out_of_ten));
     }
 
     private void showScrollingMovieOverview(View rootView) {
@@ -189,7 +154,6 @@ public class MovieDetailsFragment extends Fragment {
         ((TextView) rootView.findViewById(R.id.details_title)).setText(movie.getTitle());
     }
 
-    // TODO:  Get from database, not network
     private void showMoviePoster(View rootView) {
         String fullPosterPath =
                 getActivity().getString(R.string.tmdb_base_image_url) +
@@ -197,32 +161,28 @@ public class MovieDetailsFragment extends Fragment {
                         movie.getPoster_path();
         ImageView imageView = (ImageView) rootView.findViewById(R.id.details_movie_poster);
         Picasso.with(getActivity()).load(fullPosterPath).into(imageView);
+
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.details_fragment_menu, menu);
-
-        Log.v(LOG_TAG, "***  Entering onCreateOptionsMenu()");
+//        Log.v(LOG_TAG, "***  Entering onCreateOptionsMenu()");
 
         MenuItem menuItem = menu.findItem(R.id.action_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
         mShareActionProvider.setShareIntent(createShareTrailerIntent(""));
 
-//        new ShareActionProvider(getActivity()).setShareIntent(createShareTrailerIntent());
         if(movie != null)
             showMovieTrailers();
 
         super.onCreateOptionsMenu(menu, inflater);
-
     }
 
     private void showMovieTrailers() {
-
         trailersListView = (ListView) rootView.findViewById(R.id.listview_movie_trailer);
         Trailers trailers = new Trailers(this, getActivity(), trailersListView, movie.getId());
         trailers.setMovieTrailers();
-
     }
 
 

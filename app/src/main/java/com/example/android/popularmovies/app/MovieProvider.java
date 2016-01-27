@@ -1,6 +1,7 @@
 package com.example.android.popularmovies.app;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -77,6 +78,7 @@ public class MovieProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
         return retCursor;
     }
@@ -119,10 +121,6 @@ public class MovieProvider extends ContentProvider {
     private Cursor getMoviesWithQueryString(Uri uri, String[] projection, String sortOrder) {
 
         MovieCursorQueryParameters mcqp = new MovieCursorQueryParameters(uri);
-
-//        Log.v(LOG_TAG, " *** mcqp.getSelection:  "      + mcqp.getSelection());
-//        Log.v(LOG_TAG, " *** mcqp.getSelectionArgs:  "  + Arrays.toString(mcqp.getSelectionArgs()));
-//        Log.v(LOG_TAG, " *** mcqp.SortOrder:  "         + mcqp.getSortOrder());
 
         return  mOpenHelper.getReadableDatabase().query(
                 MoviesContract.MovieEntry.TABLE_NAME,
@@ -233,7 +231,7 @@ public class MovieProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
-            case REVIEWS: {  // TODO  Fix Insert Bug; sometimes data exists already
+            case REVIEWS: {
                 long _id = db.insert(MoviesContract.ReviewEntry.TABLE_NAME, null, values);
                 if (_id > 0)
                     returnUri = MoviesContract.ReviewEntry.buildReviewUri (_id);

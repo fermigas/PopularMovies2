@@ -35,8 +35,6 @@ public class MoviesContract {
     public static final String PATH_MOVIE = "movie";
 
 
-    // TODO  Add IDs for which_movies && order_by?
-
 
     public static final class TrailerEntry implements BaseColumns {
 
@@ -222,8 +220,6 @@ public class MoviesContract {
             return uri.getQueryParameter("sort_order");
         }
 
-        // TODO Implement function to get __ID from movie_id
-        //    Probably doesn't go here
     }
 
 

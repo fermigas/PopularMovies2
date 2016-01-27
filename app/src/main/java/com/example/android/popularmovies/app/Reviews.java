@@ -66,7 +66,6 @@ public class Reviews {
 
             String url = getMovieReviewsUrl(Integer.toString(mMovieId));
 
-            // TODO  MAybe OKHTTP is faster?
             AsyncHttpClient client = new AsyncHttpClient();
             client.get(mContext, url, new AsyncHttpResponseHandler() {
                 @Override
@@ -115,7 +114,6 @@ public class Reviews {
         private void addReviewToDb(MovieReviewsResponse mrr,
                                     MovieReviewsResponse.ResultsEntity mr) {
 
-            // TODO:  Sanitize Data
             ContentValues reviewValues = new ContentValues();
 
             reviewValues.put(MoviesContract.ReviewEntry.COLUMN_MOVIE_ID, mrr.getId());
@@ -138,7 +136,6 @@ public class Reviews {
             else
                 reviewValues.put(MoviesContract.ReviewEntry.COLUMN_URL, mr.getUrl());
 
-            // TODO  Convert to Bulk Insert
             mContext.getContentResolver().insert(MoviesContract.ReviewEntry.CONTENT_URI,
                     reviewValues);
 
