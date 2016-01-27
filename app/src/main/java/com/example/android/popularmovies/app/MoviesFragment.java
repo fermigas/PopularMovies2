@@ -280,7 +280,10 @@ public class MoviesFragment extends Fragment {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
-        String[] keys = {"data_source", "vote_count", "time_period", "genre_ids", "sort_order"};
+        String[] keys = {getActivity().getString(R.string.pref_data_source_key),
+                getActivity().getString(R.string.pref_vote_count_key),
+                getActivity().getString(R.string.pref_period_key),
+                "genre_ids", getActivity().getString(R.string.pref_sort_order_key)};
 
         String dataSource = preferences.getString(getActivity().getString(R.string.pref_data_source_key), "network");
         String voteCount = preferences.getString(getActivity().getString(R.string.pref_vote_count_key), "0");
@@ -361,64 +364,14 @@ public class MoviesFragment extends Fragment {
 
     }
 
-    private MoviesResponse.ResultsEntity getMovieFromCursor() {
-
-        Cursor cursor = moviesCursorAdapter.getCursor();
-
-        MoviesResponse.ResultsEntity movie = new MoviesResponse.ResultsEntity(
-                false,  // adult
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH)),
-                getGenreIdsAsInegerArrayList(
-                        cursor.getString(cursor.getColumnIndex(
-                                MovieEntry.COLUMN_GENRE_IDS))),
-                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_LANGUAGE)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW)),
-                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_POPULARITY)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_PATH)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE)),
-                true, // video
-                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE)),
-                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_COUNT))
-        );
-
-        return movie;
-    }
 
     private String getMovieIdFromCursor() {
 
         Cursor cursor = moviesCursorAdapter.getCursor();
 
-        MoviesResponse.ResultsEntity movie = new MoviesResponse.ResultsEntity(
-                false,  // adult
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_BACKDROP_PATH)),
-                getGenreIdsAsInegerArrayList(
-                        cursor.getString(cursor.getColumnIndex(
-                                MovieEntry.COLUMN_GENRE_IDS))),
-                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_LANGUAGE)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_ORIGINAL_TITLE)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW)),
-                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_POPULARITY)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_POSTER_PATH)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE)),
-                cursor.getString(cursor.getColumnIndex(MovieEntry.COLUMN_TITLE)),
-                true, // video
-                cursor.getDouble(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE)),
-                cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_VOTE_COUNT))
-        );
-
-        return String.valueOf(movie.getId());
+        return String.valueOf(cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)));
     }
 
-    private boolean getFavoritesStateFromCursor() {
-
-        Cursor cursor = moviesCursorAdapter.getCursor();
-
-        return ((cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_FAVORITE)) == 1));
-    }
 
     public ArrayList<Integer> getGenreIdsAsInegerArrayList(String genreIds) {
 
