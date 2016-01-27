@@ -25,6 +25,7 @@ public class MovieProvider extends ContentProvider {
 
     static final int MOVIES = 100;
     static final int MOVIES_WITH_QUERY_STRING = 101;
+    static final int MOVIES_BY_MOVIE_ID = 102;
     static final int TRAILERS = 200;
     static final int REVIEWS = 300;
     static final int TRAILERS_BY_MOVIE_ID = 201;
@@ -67,6 +68,10 @@ public class MovieProvider extends ContentProvider {
                 retCursor = getMoviesWithQueryString(uri, projection, sortOrder);
                 break;
             }
+            case MOVIES_BY_MOVIE_ID: {
+                retCursor = getMovieByMovieId(uri, projection, sortOrder);
+                break;
+            }
             case TRAILERS_BY_MOVIE_ID: {
                 retCursor = getTrailersByMovieId(uri, projection, sortOrder);
                 break;
@@ -81,6 +86,24 @@ public class MovieProvider extends ContentProvider {
 
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
         return retCursor;
+    }
+
+    private Cursor getMovieByMovieId(Uri uri, String[] projection, String sortOrder) {
+
+        String movieId = MoviesContract.MovieEntry.getMovieIdFromUri(uri);
+        String selection = MoviesContract.MovieEntry.COLUMN_MOVIE_ID + " = ? ";
+        String[] selectionArgs = new String[]{movieId};
+
+        return  mOpenHelper.getReadableDatabase().query(
+                MoviesContract.MovieEntry.TABLE_NAME,
+                null,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
     }
 
     private Cursor getTrailersByMovieId(Uri uri, String[] projection, String sortOrder) {
@@ -320,6 +343,7 @@ public class MovieProvider extends ContentProvider {
         matcher.addURI(authority, MoviesContract.PATH_REVIEW, REVIEWS);
 
         matcher.addURI(authority, MoviesContract.PATH_MOVIE + "/*", MOVIES_WITH_QUERY_STRING);
+        matcher.addURI(authority, MoviesContract.PATH_MOVIE_ID + "/*", MOVIES_BY_MOVIE_ID);
         matcher.addURI(authority, MoviesContract.PATH_TRAILER + "/*", TRAILERS_BY_MOVIE_ID);
         matcher.addURI(authority, MoviesContract.PATH_REVIEW + "/*", REVIEWS_BY_MOVIE_ID);
 

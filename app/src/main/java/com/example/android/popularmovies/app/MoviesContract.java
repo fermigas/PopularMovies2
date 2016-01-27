@@ -33,6 +33,7 @@ public class MoviesContract {
     public static final String PATH_TRAILER = "trailer";
     public static final String PATH_REVIEW = "review";
     public static final String PATH_MOVIE = "movie";
+    public static final String PATH_MOVIE_ID = "movie_id";
 
 
 
@@ -140,13 +141,24 @@ public class MoviesContract {
         public static final String COLUMN_POSTER_BITMAP = "poster_bitmap";
 
 
-        // Build a URI for getting details for a single movie from its movie_id
-        public static Uri buildMovieUri(long id) {
-            return ContentUris.withAppendedId(CONTENT_URI, id);
-        }
+    // Build a URI for getting details for a single movie from its movie_id
+    public static Uri buildMovieUri(long id) {
+        return ContentUris.withAppendedId(CONTENT_URI, id);
+    }
+
+    public static Uri buildMovieWithMovieId(String movieID) {
+        return BASE_CONTENT_URI.buildUpon()
+                .appendPath(PATH_MOVIE_ID)
+                .appendPath(movieID).build();
+    }
+
+    public static String getMovieIdFromUri(Uri uri) {
+        return uri.getPathSegments().get(1);
+    }
 
 
-        public static Uri buildMoviesUri(){
+
+    public static Uri buildMoviesUri(){
             return CONTENT_URI.buildUpon().appendPath(PATH_MOVIE).build();
         }
 

@@ -2,13 +2,19 @@ package com.example.android.popularmovies.app;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.example.android.popularmovies.app.MoviesContract.MovieEntry;
 import com.squareup.picasso.Picasso;
 
 
@@ -18,6 +24,7 @@ public class MovieDetails {
     private final MoviesResponse.ResultsEntity mMovie;
     private boolean mFavoriteState;
     private final View mRootView;
+    private Cursor mCursor;
 
     public MovieDetails(Context context, MoviesResponse.ResultsEntity movie, boolean favoriteState, View rootView) {
         this.mContext = context;
@@ -28,6 +35,9 @@ public class MovieDetails {
     }
 
     public void showMovieDetails() {
+
+        mCursor = getMovieDetails();
+
         showMoviePoster();
         showMovieTitle();
         showScrollingMovieOverview();
@@ -39,34 +49,65 @@ public class MovieDetails {
 
     }
 
+    private Cursor getMovieDetails(){
+
+        Cursor cursor = null;
+        try {
+            cursor = mContext.getContentResolver().query(
+                    MovieEntry.buildMovieWithMovieId(String.valueOf(mMovie.getId())),
+                    null, null, null, null);
+            if (cursor != null)
+                cursor.moveToFirst();
+
+        } catch (Exception e) {
+
+        }
+
+        return cursor;
+    }
+
     private void showMoviePoster() {
-        String fullPosterPath =
-                mContext.getString(R.string.tmdb_base_image_url) +
-                        mContext.getString(R.string.tmdb_image_size_342) +
-                        mMovie.getPoster_path();
+
         ImageView imageView = (ImageView) mRootView.findViewById(R.id.details_movie_poster);
-        Picasso.with(mContext).load(fullPosterPath).into(imageView);
+        imageView.setAdjustViewBounds(true);
+        imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        imageView.setPadding(0,0,0,0);
+
+        final byte[] imageBytes = mCursor.getBlob(
+                mCursor.getColumnIndex(MovieEntry.COLUMN_POSTER_BITMAP) );
+
+        if(imageBytes != null )
+            imageView.setImageBitmap(
+                    BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length) );
+
 
     }
 
     private void showMovieTitle() {
-        ((TextView) mRootView.findViewById(R.id.details_title)).setText(mMovie.getTitle());
+        ((TextView) mRootView.findViewById(R.id.details_title))
+                .setText(mCursor.getString(
+                        mCursor.getColumnIndex(MovieEntry.COLUMN_TITLE)));
     }
 
     private void showScrollingMovieOverview() {
         TextView tv = ((TextView) mRootView.findViewById(R.id.details_overview));
         tv.setMovementMethod(new ScrollingMovementMethod());
-        tv.setText(mMovie.getOverview());
+        tv.setText(mCursor.getString(
+                mCursor.getColumnIndex(MovieEntry.COLUMN_OVERVIEW)));
     }
 
     private void showMovieReleaseDate() {
         ((TextView) mRootView.findViewById(R.id.details_release_date))
-                .setText(mMovie.getRelease_date().substring(0, 4));
+                .setText(mCursor.getString(
+                        mCursor.getColumnIndex(MovieEntry.COLUMN_RELEASE_DATE))
+                        .substring(0, 4));
     }
 
     private void showMovieVoteAverage() {
         ((TextView) mRootView.findViewById(R.id.details_rating))
-                .setText(mMovie.getVote_average() + mContext.getString(R.string.out_of_ten));
+                .setText(mCursor.getDouble(
+                        mCursor.getColumnIndex(MovieEntry.COLUMN_VOTE_AVERAGE))
+                        + mContext.getString(R.string.out_of_ten));
     }
 
     private void setFavoritesToggleButtonInitialState() {
@@ -91,12 +132,12 @@ public class MovieDetails {
     private void updateFavoriteInDb(int favoriteState) {
 
         ContentValues movieValues = new ContentValues();
-        movieValues.put(MoviesContract.MovieEntry.COLUMN_FAVORITE, favoriteState);
+        movieValues.put(MovieEntry.COLUMN_FAVORITE, favoriteState);
 
         int rowsUpdated = mContext.getContentResolver()
-                .update(MoviesContract.MovieEntry.CONTENT_URI,
+                .update(MovieEntry.CONTENT_URI,
                         movieValues,
-                        MoviesContract.MovieEntry.COLUMN_MOVIE_ID + " = ? ",
+                        MovieEntry.COLUMN_MOVIE_ID + " = ? ",
                         new String[]{String.valueOf(mMovie.getId())}
                 );
 
@@ -107,6 +148,10 @@ public class MovieDetails {
     }
 
     public boolean getFavoriteState() {
+
+        int i =  mCursor.getInt( mCursor.getColumnIndex(
+                             MovieEntry.COLUMN_FAVORITE) ) ;
+        mFavoriteState = (boolean) (i != 0);
         return mFavoriteState;
     }
 
