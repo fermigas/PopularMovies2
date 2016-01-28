@@ -62,6 +62,7 @@ public class MoviesFragment extends Fragment {
     private MoviesCursorAdapter moviesCursorAdapter;
     SharedPreferences prefs = null;
     int savedPosition = 0;
+    String savedMovieId;
     private View rootView;
     private GridView mGridView;
     private MovieReviewsResponse reviewsResponse;
@@ -72,6 +73,7 @@ public class MoviesFragment extends Fragment {
     private boolean mAppJustStarted = false;
     private boolean mJustRotated = false;
     private String mState = "";
+    private boolean weJustScrolledToTheEnd = false;
 
     interface Callback {
         public void onItemSelected(String movieId);
@@ -83,15 +85,24 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v(LOG_TAG, "***  Entering onCreateView()");
         setHasOptionsMenu(true);
 
     }
 
     @Override
     public void onSaveInstanceState(Bundle outstate) {
+        Log.v(LOG_TAG, "***  Entering onSaveInstanceState()");
         super.onSaveInstanceState(outstate);
         oldPrefs = prefs.getAll();
         outstate.putString("saved_prefs", oldPrefs.toString());
+        int pos = mGridView.getFirstVisiblePosition();
+        outstate.putInt("selected_item_position", pos);
+        Log.v(LOG_TAG, "***  onSaveInstanceState() first_visible_position = "+ pos);
+        outstate.putInt("saved_position", savedPosition);
+        Log.v(LOG_TAG, "***  onSaveInstanceState() savedPosition = "+ savedPosition);
+        outstate.putString("saved_movie_id", savedMovieId);
+        Log.v(LOG_TAG, "***  onSaveInstanceState() savedMovieId = "+ savedMovieId);
     }
 
     @Override
@@ -109,7 +120,7 @@ public class MoviesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        //Log.v(LOG_TAG, "***  Entering onCreate()");
+        Log.v(LOG_TAG, "***  Entering onCreateView()");
         prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         rootView = inflater.inflate(R.layout.movie_fragment, container, false);
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
@@ -126,7 +137,7 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onResume() {
             super.onResume();
-        //Log.v(LOG_TAG, "***  Entering onResume()");
+        Log.v(LOG_TAG, "***  Entering onResume()");
 
         if (getDataSource().equals("network")) {
             initializeMoviesGridFromNetwork();
@@ -143,25 +154,25 @@ public class MoviesFragment extends Fragment {
             case "app_just_started":
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-//                Log.v(LOG_TAG, "***  Cache, App Just Started, reatached, set first position");
+                Log.v(LOG_TAG, "***  Cache, App Just Started, reatached, set first position");
                 break;
 
             case "rotated":  // Do nothing; no new selection
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-//                Log.v(LOG_TAG, "***  Cache, rotated, did nothing");
+                Log.v(LOG_TAG, "***  Cache, rotated, did nothing");
                 break;
 
             case "prefs_changed":
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-//                Log.v(LOG_TAG, "***  Cache, prefs changed, reatached, set first position");
+                Log.v(LOG_TAG, "***  Cache, prefs changed, reatached, set first position");
                 break;
 
             case "prefs_didnt_change":  // Do nothing; no new selection
                 reattachGridViewCursorAdapter();
                 selectFirstMovieToFillOutDetail();
-//                Log.v(LOG_TAG, "***  Cache, prefs didn't change, did nothing.");
+                Log.v(LOG_TAG, "***  Cache, prefs didn't change, did nothing.");
                 break;
 
         }
@@ -174,22 +185,22 @@ public class MoviesFragment extends Fragment {
 
             case "app_just_started":
                 getFirstPageOfMovies();  // This will select the first movie
-//                Log.v(LOG_TAG, "***  Network, App Just Started, Got First Page of Movies");
+                Log.v(LOG_TAG, "***  Network, App Just Started, Got First Page of Movies");
                 break;
 
             case "rotated":  // Do nothing; no new selection
                 getFirstPageOfMovies(); // This will select the first movie
-//                Log.v(LOG_TAG, "***  Network, rotated, did nothing");
+                Log.v(LOG_TAG, "***  Network, rotated, did nothing");
                 break;
 
             case "prefs_changed":
                 getFirstPageOfMovies(); // This will select the first movie
-//                Log.v(LOG_TAG, "***  Network, prefs changed, Got First Page of Movies.");
+                Log.v(LOG_TAG, "***  Network, prefs changed, Got First Page of Movies.");
                 break;
 
             case "prefs_didnt_change":  // Do nothing; no new selection
                 getFirstPageOfMovies(); // This will select the first movie
-//                Log.v(LOG_TAG, "***  Network, prefs didn't change, did nothing.");
+                Log.v(LOG_TAG, "***  Network, prefs didn't change, did nothing.");
                 break;
 
         }
@@ -202,12 +213,21 @@ public class MoviesFragment extends Fragment {
 
         Log.v(LOG_TAG, "***  Entering onActivityCreated() ");
 
+        if(savedInstanceState != null ) {
+            savedPosition = savedInstanceState.getInt("saved_position");
+            if (savedPosition == -1) {
+                savedPosition = 0;
+            }
+
+            savedMovieId = savedInstanceState.getString("saved_movie_id");
+            if (savedMovieId == null)
+                savedMovieId = "";
+        }
+
         // Did the App just start?
         if(didAppJustStart(savedInstanceState)) {
             mState = "app_just_started";
-
             oldPrefs = prefs.getAll();
-
         } else { // Ok, we just rotated
             mState = "rotated";
             savedPrefs = savedInstanceState.getString("saved_prefs");
@@ -248,13 +268,18 @@ public class MoviesFragment extends Fragment {
         if(mGridView.getNumColumns() % 2 == 0)  // Tablets use odd #s
             return;  // Don't select unless we're using master/detail
 
-        Cursor cursor = moviesCursorAdapter.getCursor();
-        cursor.moveToFirst();
-
-        String movieId = getMovieIdFromCursor();
-        mGridView.smoothScrollToPosition(0);
-        mGridView.setSelection(0);
-        ((Callback) getActivity()).onItemSelected(movieId);
+        if(savedMovieId != null && savedMovieId != "") {
+            Log.v(LOG_TAG, "***  FillOutDetail savedPosition = "+ savedPosition);
+            mGridView.smoothScrollToPosition(savedPosition);
+            Log.v(LOG_TAG, "***  FillOutDetail savedMovieId = " + savedMovieId);
+            ((Callback) getActivity()).onItemSelected(savedMovieId);
+        }
+        else {
+            Cursor cursor = moviesCursorAdapter.getCursor();
+            cursor.moveToFirst();
+            String movieId = getMovieIdFromCursor();
+            ((Callback) getActivity()).onItemSelected(movieId);
+        }
     }
 
     private Cursor getCursorWithCurrentPreferences() {
@@ -341,6 +366,7 @@ public class MoviesFragment extends Fragment {
     private void getAnotherPageOfMoviesIfNeeded(int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
         if (shouldWeFetchMoreMovies(firstVisibleItem, visibleItemCount, totalItemCount)) {
+            weJustScrolledToTheEnd = true;
             fetchMoviesFromWeb(currentPage);
             currentPage += 1;
         }
@@ -368,8 +394,8 @@ public class MoviesFragment extends Fragment {
     private String getMovieIdFromCursor() {
 
         Cursor cursor = moviesCursorAdapter.getCursor();
-
-        return String.valueOf(cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)));
+        savedMovieId = String.valueOf(cursor.getInt(cursor.getColumnIndex(MovieEntry.COLUMN_MOVIE_ID)));
+        return savedMovieId;
     }
 
 
@@ -540,10 +566,20 @@ public class MoviesFragment extends Fragment {
 
         if (isLastResult) { // Change cursor after last result from a page has been downloaded
             reattachGridViewCursorAdapter();
-            selectFirstMovieToFillOutDetail();
+            // if we get here because we scrolled to the end, don't scroll back
+            if (didWeJustScrollToTheEnd()) {
+                weJustScrolledToTheEnd = false;
+            } else {
+                selectFirstMovieToFillOutDetail();
+            }
 
         }
 
+    }
+
+    private boolean didWeJustScrollToTheEnd() {
+
+        return weJustScrolledToTheEnd;
     }
 
     private void insertMovieIntoDB(byte[] imageBytes, MoviesResponse.ResultsEntity mr) {
