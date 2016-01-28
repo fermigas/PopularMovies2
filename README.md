@@ -51,7 +51,7 @@ It shows data on popular movies from themoviedb.org.
 - Android Test
 - junit
 - ShareActionProvider
-= Callbacks
+- Callbacks
 
 ##Features in Popular Movies, Stage 1
 
@@ -112,7 +112,7 @@ the origin in the database as movies are fetched from the network.
 ##Some self-criticisms
 
 ###I tried to do too much
-- Having an offline cache for all movies instead of just favorited added a lot of complexity
+- Having an offline cache for all movies instead of just favorites added a lot of complexity
 - Offering so many kinds of sorting and filtering also lead to a lot of code bloat
 
 ###Test coverage is low, leading to a lot time lost quenching weird bugs
@@ -122,9 +122,11 @@ if I hadn't tried to support so many features and technologies.  Nah, who'm I ki
 - I'm dying for something like NCrunch to keep me honest
 
 ###Many design choices are less than optimal
-- I had to forego cursor loaders because of various conflicts with jloop I couldn't resolve
+- I had to forego cursor loaders because of various conflicts with jloop I couldn't resolve.
+In retrospect, while this cut down on code and some classes, it added a lot of code to handle
+varous concurrency issues.
 - I used several different async libraries to test them out; in practice, I should use the one
-that's most appropriate to my needs.
+that's most appropriate to my needs.  
 - GSON/GSON Format are powerful, but I need to find or build a cleaner way to combine them with
 data providers and parcelables and database fields that aren't in the original JSON
 - The concurrency model used is clunky overall.  This is a result of a combination of my
