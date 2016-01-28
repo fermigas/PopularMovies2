@@ -10,9 +10,8 @@ It shows data on popular movies from themoviedb.org.
 
 - Scroll through a grid of over 200,000 movie posters!
 - Read reviews of movies
-- Easily build a list of your favorite movies and browse it offline
+- Easily build a list of your favorite movies; browse and sort it offline
 - Play Trailers
-- Mark and sort by your favorite movies
 - Share trailers with friends on many social media outlets!
 - Now supports Android Tablets - *Classy master/detail view in portrait and landscape!*
 - Now follows Android's beautiful new Material Design guidelines
@@ -52,6 +51,7 @@ It shows data on popular movies from themoviedb.org.
 - Android Test
 - junit
 - ShareActionProvider
+= Callbacks
 
 ##Features in Popular Movies, Stage 1
 
@@ -97,7 +97,48 @@ buildTypes.each{
 }
 
 
+##This app is incomplete.  Here's what it still needs:
+
+- A way to delete data in the cache
+- Attribution to themoviedb.com in an About page
+- A sane way of keeping track of how movies got into the cache so that they can be filtered and
+sorted more effectively.  Currently, a lot of highest rated movies show up in the most popular
+list, which makes no sense.  I need to find out what sorting criteria themoviedb uses or mark
+the origin in the database as movies are fetched from the network.
+- A lot of productionizing; strings, google play, google properties integration
+- Better use of material design
 
 
+##Some self-criticisms
 
+###I tried to do too much
+- Having an offline cache for all movies instead of just favorited added a lot of complexity
+- Offering so many kinds of sorting and filtering also lead to a lot of code bloat
 
+###Test coverage is low, leading to a lot time lost quenching weird bugs
+- I need to learn Dagger and how to automate UI testing, on real devices in particular
+- I didn't use tdd, so a lot of cruft built up.  I probably could have gotten away with it
+if I hadn't tried to support so many features and technologies.  Nah, who'm I kidding.
+- I'm dying for something like NCrunch to keep me honest
+
+###Many design choices are less than optimal
+- I had to forego cursor loaders because of various conflicts with jloop I couldn't resolve
+- I used several different async libraries to test them out; in practice, I should use the one
+that's most appropriate to my needs.
+- GSON/GSON Format are powerful, but I need to find or build a cleaner way to combine them with
+data providers and parcelables and database fields that aren't in the original JSON
+- The concurrency model used is clunky overall.  This is a result of a combination of my
+unfamiliarity with Android when I started and using different async libs.
+- The MoviesFragment class shold be factored out into several classes, one for managing network
+mode, another for handling cache mode, and a third for managing interaction.  There's too much
+coupling between the data fetching, database code, drawing the UI and handling interaction.
+Most of this would never have materialized had I been using tdd.
+- Use of meterial design is poor
+
+###I made poor use of git/github
+- Checkins and pushes were seldom logical units
+- I didn't make effective use of branching, especially near the beginning
+
+###Android Studio 2.0 preview
+- Great for-round tripping UI tweeks and small logic changes
+- Painful for Gradle changes, emulator weirdness and test environment breaks
