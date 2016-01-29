@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public class MoviesFragment extends Fragment {
 
@@ -65,18 +64,14 @@ public class MoviesFragment extends Fragment {
     String savedMovieId;
     private View rootView;
     private GridView mGridView;
-    private MovieReviewsResponse reviewsResponse;
     final Set<Target> targetHashSet = new HashSet<>();
-    private boolean mPrefsChangedOrAppStarted = false;
     private Map<String, ?> oldPrefs;
     private String savedPrefs;
-    private boolean mAppJustStarted = false;
-    private boolean mJustRotated = false;
     private String mState = "";
     private boolean weJustScrolledToTheEnd = false;
 
     interface Callback {
-        public void onItemSelected(String movieId);
+        void onItemSelected(String movieId);
     }
 
     public MoviesFragment() {
@@ -85,7 +80,7 @@ public class MoviesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v(LOG_TAG, "***  Entering onCreateView()");
+        Log.v(LOG_TAG, "***  Entering onCreate()");
         setHasOptionsMenu(true);
 
     }
@@ -268,7 +263,7 @@ public class MoviesFragment extends Fragment {
         if(mGridView.getNumColumns() % 2 == 0)  // Tablets use odd #s
             return;  // Don't select unless we're using master/detail
 
-        if(savedMovieId != null && savedMovieId != "") {
+        if(savedMovieId != null && savedMovieId.equals("")) {
             Log.v(LOG_TAG, "***  FillOutDetail savedPosition = "+ savedPosition);
             mGridView.smoothScrollToPosition(savedPosition);
             Log.v(LOG_TAG, "***  FillOutDetail savedMovieId = " + savedMovieId);
