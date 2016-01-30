@@ -15,7 +15,9 @@
  */
 package com.example.android.popularmovies.app;
 
+import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -52,6 +54,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 public class MoviesFragment extends Fragment {
 
     private final String LOG_TAG = MoviesFragment.class.getSimpleName();
@@ -59,7 +63,6 @@ public class MoviesFragment extends Fragment {
     private Boolean currentlyFetchingMovies = true;
     private Boolean morePagesOfMoviesLeftToGet = true;
     private MoviesCursorAdapter moviesCursorAdapter;
-    SharedPreferences prefs = null;
     int savedPosition = 0;
     String savedMovieId;
     private View rootView;
@@ -70,11 +73,28 @@ public class MoviesFragment extends Fragment {
     private String mState = "";
     private boolean weJustScrolledToTheEnd = false;
 
+
+    SharedPreferences prefs = null;
+
+    @Inject MoviePreferences moviePreferences;
+
     interface Callback {
         void onItemSelected(String movieId);
     }
 
     public MoviesFragment() {
+
+
+    }
+
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // Inject mMoviePreferences
+        ((MoviesApplication) activity.getApplication()).getAppComponent().inject(this);
+
     }
 
     @Override
@@ -82,6 +102,7 @@ public class MoviesFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.v(LOG_TAG, "***  Entering onCreate()");
         setHasOptionsMenu(true);
+
 
     }
 

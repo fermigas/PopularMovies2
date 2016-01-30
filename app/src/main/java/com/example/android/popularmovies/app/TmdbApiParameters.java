@@ -1,11 +1,8 @@
 package com.example.android.popularmovies.app;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.util.Log;
-
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -27,6 +24,7 @@ public class TmdbApiParameters {
         uri = Uri.parse(getBaseURL());
         builder = uri.buildUpon();
 
+        // Inject mMoviePreferences
         ((MoviesApplication) activity.getApplication()).getAppComponent().inject(this);
 
     }
