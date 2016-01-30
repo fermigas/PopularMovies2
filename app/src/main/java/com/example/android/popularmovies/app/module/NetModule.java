@@ -17,10 +17,16 @@ import dagger.Provides;
 @Module
 public class NetModule {
 
-    String baseUrl;
+//    String baseUrl;
 
-    public NetModule(String baseUrl) {
-        this.baseUrl = baseUrl;
+    public NetModule( /* String baseUrl  */  ) {
+      //   this.baseUrl = baseUrl;
+    }
+
+    @Provides
+    @Singleton
+    public Gson gson(){
+        return new Gson();
     }
 
 

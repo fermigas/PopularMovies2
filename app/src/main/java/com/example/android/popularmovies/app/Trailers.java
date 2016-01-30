@@ -27,8 +27,8 @@ public class Trailers {
     String mMovieId;
     private MovieTrailersResponse trailersResponse;
 
-    @Inject
-    MoviePreferences mMoviePreferences;
+    @Inject MoviePreferences mMoviePreferences;
+    @Inject Gson gson;
 
 
     public Trailers(MovieDetailsFragment movieDetailsFragment, Activity activity, ListView trailersListView, String movieId) {
@@ -81,7 +81,6 @@ public class Trailers {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String responsestr = new String(responseBody);
-                Gson gson = new Gson();
                 trailersResponse = gson.fromJson(responsestr, MovieTrailersResponse.class);
                 insertTrailers(trailersResponse);
                 setTrailersListAdapter();

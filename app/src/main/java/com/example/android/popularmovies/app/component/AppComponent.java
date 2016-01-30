@@ -8,13 +8,14 @@ import com.example.android.popularmovies.app.Reviews;
 import com.example.android.popularmovies.app.TmdbApiParameters;
 import com.example.android.popularmovies.app.Trailers;
 import com.example.android.popularmovies.app.module.AppModule;
+import com.example.android.popularmovies.app.module.NetModule;
 
 import javax.inject.Singleton;
 
 import dagger.Component;
 
 @Singleton
-@Component (modules = {AppModule.class})
+@Component (modules = {AppModule.class, NetModule.class})
 public interface AppComponent {
 
     /*

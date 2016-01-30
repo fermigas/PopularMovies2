@@ -22,9 +22,8 @@ public class Reviews {
     String mMovieId;
     private MovieReviewsResponse reviewsResponse;
 
-    @Inject
-    MoviePreferences mMoviePreferences;
-
+    @Inject MoviePreferences mMoviePreferences;
+    @Inject Gson gson;
 
     public Reviews(Activity activity, ListView reviewsListView, String movieId) {
         this.mActivity = activity;
@@ -71,7 +70,6 @@ public class Reviews {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String responsestr = new String(responseBody);
-                Gson gson = new Gson();
                 reviewsResponse = gson.fromJson(responsestr, MovieReviewsResponse.class);
                 insertReviews(reviewsResponse);
                 setReviewListAdapter();

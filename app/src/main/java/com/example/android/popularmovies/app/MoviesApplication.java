@@ -6,6 +6,7 @@ import android.app.Application;
 import com.example.android.popularmovies.app.component.AppComponent;
 import com.example.android.popularmovies.app.component.DaggerAppComponent;
 import com.example.android.popularmovies.app.module.AppModule;
+import com.example.android.popularmovies.app.module.NetModule;
 
 public class MoviesApplication extends Application {
 
@@ -18,6 +19,7 @@ public class MoviesApplication extends Application {
         // AppModule holds application-wide singletons
         mAppComponent = DaggerAppComponent.builder()
                 .appModule(new AppModule(this))
+                .netModule(new NetModule())
                 .build();
     }
 
@@ -25,6 +27,7 @@ public class MoviesApplication extends Application {
     public AppComponent getAppComponent(){
         return mAppComponent;
     }
+
 }
 
 

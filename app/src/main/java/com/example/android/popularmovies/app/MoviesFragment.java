@@ -53,6 +53,7 @@ public class MoviesFragment extends Fragment {
 
 
     @Inject MoviePreferences mMoviePreferences;
+    @Inject Gson gson;
 
 
     interface Callback {
@@ -441,7 +442,6 @@ public class MoviesFragment extends Fragment {
 
     private MoviesResponse getMoviesResponse(byte[] responseBody) {
         String responsestr = new String(responseBody);
-        Gson gson = new Gson();
         return gson.fromJson(responsestr, MoviesResponse.class);
     }
 
