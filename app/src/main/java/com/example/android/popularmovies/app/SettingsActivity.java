@@ -90,6 +90,8 @@ public class SettingsActivity extends PreferenceActivity
     private void bindPreferenceSummaryToValue(Preference preference) {
         preference.setOnPreferenceChangeListener(this);
 
+        // TODO add code which needs to know if prefs changed here
+
         onPreferenceChange(preference, PreferenceManager
                                             .getDefaultSharedPreferences(preference.getContext())
                                             .getString(preference.getKey(), ""));

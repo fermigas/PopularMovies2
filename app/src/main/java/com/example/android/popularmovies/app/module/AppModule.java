@@ -5,6 +5,8 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.example.android.popularmovies.app.MoviePreferences;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -31,4 +33,12 @@ public class AppModule {
         return PreferenceManager.getDefaultSharedPreferences(application);
     }
 
+    @Provides
+    @Singleton
+    MoviePreferences providesMoviePreferences(SharedPreferences sharedPreferences,
+                                              Application application){
+        MoviePreferences moviePreferences =
+                new MoviePreferences(application, sharedPreferences);
+        return moviePreferences;
+    }
 }

@@ -28,7 +28,6 @@ import javax.inject.Inject;
 
 public class MainActivity extends ActionBarActivity implements MoviesFragment.Callback {
 
-    @Inject SharedPreferences sharedPreferences;
 
     private static final String MOVIEDETAILDFRAGMENT_TAG = "MDFTAG";
     private boolean mTwoPane;
@@ -37,8 +36,6 @@ public class MainActivity extends ActionBarActivity implements MoviesFragment.Ca
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
-        ((MoviesApplication) getApplication()).getAppComponent().inject(this);
 
         if(findViewById(R.id.movie_detail_container) != null){
             mTwoPane = true;

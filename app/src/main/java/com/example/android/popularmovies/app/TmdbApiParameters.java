@@ -3,7 +3,6 @@ package com.example.android.popularmovies.app;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.Set;
@@ -19,14 +18,15 @@ public class TmdbApiParameters {
     private Uri.Builder builder;
     private Uri uri;
 
-    @Inject SharedPreferences sharedPreferences;
+    @Inject
+    MoviePreferences mMoviePreferences;
 
-    TmdbApiParameters(Activity activity, int currentPage){
+    TmdbApiParameters(Activity activity, int currentPage ){
         this.mActivity = activity;
         this.mcurrentPage = currentPage;
         uri = Uri.parse(getBaseURL());
         builder = uri.buildUpon();
-        // sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+
         ((MoviesApplication) activity.getApplication()).getAppComponent().inject(this);
 
     }
@@ -55,7 +55,7 @@ public class TmdbApiParameters {
         // Use primariy_release_date or you get back multile results
         // because sometimes there are much later re-releases
         // This can pollute results upon sorting by gross, popularity, etc.
-        TimePeriod timePeriod = new TimePeriod(getPeriodPreferences());
+        TimePeriod timePeriod = new TimePeriod(mMoviePreferences.getPeriodPreferences());
         if(timePeriod.periodHasLowerDate()) {
             builder.appendQueryParameter("primary_release_date.gte", timePeriod.getLowerDate());
         }
@@ -65,17 +65,17 @@ public class TmdbApiParameters {
     }
 
     private void appendGenres() {
-        String genres = getGenresAsCommaSeparatedNumbers();
+        String genres = mMoviePreferences.getGenresAsCommaSeparatedNumbers();
         if(!genres.equals(""))
            builder.appendQueryParameter("with_genres", genres);
     }
 
     private void appendVoteCount() {
-        builder.appendQueryParameter("vote_count.gte", getVoteCount());
+        builder.appendQueryParameter("vote_count.gte", mMoviePreferences.getVoteCount());
     }
 
     private void appendSortOrder() {
-        String sortOrder = getSortOrder();
+        String sortOrder = mMoviePreferences.getSortOrder();
         if(sortOrder != null && !sortOrder.equals("none") )
             builder.appendQueryParameter("sort_by", sortOrder);
     }
@@ -84,27 +84,10 @@ public class TmdbApiParameters {
          builder.appendQueryParameter("page", String.valueOf(mcurrentPage));
     }
 
-    private String getPeriodPreferences() { return   sharedPreferences.getString(mActivity.getString(R.string.pref_period_key), "all"); }
-
-
-    private String getGenresAsCommaSeparatedNumbers() {
-
-        String genres;
-        Set<String> genresSet = sharedPreferences.getStringSet("genre_ids", null);
-        if ( genresSet != null && !genresSet.isEmpty()  )
-           genres = genresSet.toString().replaceAll("\\s+", "").replace("[", "").replace("]", "");
-        else
-            genres = "";
-
-        return genres;
-    }
-
     private String getBaseURL(){
-       return mActivity.getString(R.string.tmdb_base_url);
+        return mActivity.getString(R.string.tmdb_base_url);
     }
 
-    private String getSortOrder(){ return  sharedPreferences.getString( mActivity.getString(R.string.pref_sort_order_key), mActivity.getString(R.string.pref_sort_order_most_popular)); }
 
-    private String getVoteCount(){  return  sharedPreferences.getString( mActivity.getString(R.string.pref_vote_count_key),  mActivity.getString(R.string.pref_vote_count_value_0)); }
 
 }
