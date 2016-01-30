@@ -53,7 +53,7 @@ public class TmdbApiParameters {
         // Use primariy_release_date or you get back multile results
         // because sometimes there are much later re-releases
         // This can pollute results upon sorting by gross, popularity, etc.
-        TimePeriod timePeriod = new TimePeriod(mMoviePreferences.getPeriodPreferences());
+        TimePeriod timePeriod = new TimePeriod(mMoviePreferences.getTimePeriods());
         if(timePeriod.periodHasLowerDate()) {
             builder.appendQueryParameter("primary_release_date.gte", timePeriod.getLowerDate());
         }

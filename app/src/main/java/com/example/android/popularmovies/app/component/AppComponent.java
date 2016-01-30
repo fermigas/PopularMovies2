@@ -4,7 +4,9 @@ import android.content.SharedPreferences;
 
 import com.example.android.popularmovies.app.MoviesApplication;
 import com.example.android.popularmovies.app.MoviesFragment;
+import com.example.android.popularmovies.app.Reviews;
 import com.example.android.popularmovies.app.TmdbApiParameters;
+import com.example.android.popularmovies.app.Trailers;
 import com.example.android.popularmovies.app.module.AppModule;
 
 import javax.inject.Singleton;
@@ -23,5 +25,7 @@ public interface AppComponent {
     void inject(SharedPreferences sharedPreferences);
     void inject(TmdbApiParameters tmdbApiParameters);
     void inject(MoviesFragment fragment);
+    void inject(Reviews reviews);
+    void inject(Trailers trailers);
 
 }

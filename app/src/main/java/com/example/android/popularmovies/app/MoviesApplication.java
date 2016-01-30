@@ -19,8 +19,6 @@ public class MoviesApplication extends Application {
         mAppComponent = DaggerAppComponent.builder()
                 .appModule(new AppModule(this))
                 .build();
-
-
     }
 
 
