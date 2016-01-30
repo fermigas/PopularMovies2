@@ -15,6 +15,8 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 
 import org.apache.http.Header;
 
+import javax.inject.Inject;
+
 public class Reviews {
 
 

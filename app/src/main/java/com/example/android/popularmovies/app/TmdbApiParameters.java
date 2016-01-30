@@ -8,6 +8,8 @@ import android.util.Log;
 
 import java.util.Set;
 
+import javax.inject.Inject;
+
 public class TmdbApiParameters {
 
     private final String LOG_TAG = TmdbApiParameters.class.getSimpleName();
@@ -16,14 +18,17 @@ public class TmdbApiParameters {
     int mcurrentPage = 1;
     private Uri.Builder builder;
     private Uri uri;
-    private SharedPreferences sharedPreferences;
+
+    @Inject SharedPreferences sharedPreferences;
 
     TmdbApiParameters(Activity activity, int currentPage){
         this.mActivity = activity;
         this.mcurrentPage = currentPage;
         uri = Uri.parse(getBaseURL());
         builder = uri.buildUpon();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        // sharedPreferences = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        ((MoviesApplication) activity.getApplication()).getAppComponent().inject(this);
+
     }
 
 
