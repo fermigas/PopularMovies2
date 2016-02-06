@@ -1,29 +1,13 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 package com.example.android.popularmovies.app;
 
+import android.app.Activity;
 import android.content.ContentValues;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -47,11 +31,10 @@ import com.squareup.picasso.Target;
 import org.apache.http.Header;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
+
+import javax.inject.Inject;
 
 public class MoviesFragment extends Fragment {
 
@@ -60,42 +43,45 @@ public class MoviesFragment extends Fragment {
     private Boolean currentlyFetchingMovies = true;
     private Boolean morePagesOfMoviesLeftToGet = true;
     private MoviesCursorAdapter moviesCursorAdapter;
-    SharedPreferences prefs = null;
     int savedPosition = 0;
     String savedMovieId;
     private View rootView;
     private GridView mGridView;
-    private MovieReviewsResponse reviewsResponse;
     final Set<Target> targetHashSet = new HashSet<>();
-    private boolean mPrefsChangedOrAppStarted = false;
-    private Map<String, ?> oldPrefs;
-    private String savedPrefs;
-    private boolean mAppJustStarted = false;
-    private boolean mJustRotated = false;
     private String mState = "";
     private boolean weJustScrolledToTheEnd = false;
 
+
+    @Inject MoviePreferences mMoviePreferences;
+    @Inject Gson gson;
+
+
     interface Callback {
-        public void onItemSelected(String movieId);
+        void onItemSelected(String movieId);
     }
 
-    public MoviesFragment() {
+    public MoviesFragment() { }
+
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        // Inject mMoviePreferences
+        ((MoviesApplication) activity.getApplication()).getAppComponent().inject(this);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.v(LOG_TAG, "***  Entering onCreateView()");
+        Log.v(LOG_TAG, "***  Entering onCreate()");
         setHasOptionsMenu(true);
-
     }
 
     @Override
     public void onSaveInstanceState(Bundle outstate) {
         Log.v(LOG_TAG, "***  Entering onSaveInstanceState()");
         super.onSaveInstanceState(outstate);
-        oldPrefs = prefs.getAll();
-        outstate.putString("saved_prefs", oldPrefs.toString());
+
         int pos = mGridView.getFirstVisiblePosition();
         outstate.putInt("selected_item_position", pos);
         Log.v(LOG_TAG, "***  onSaveInstanceState() first_visible_position = "+ pos);
@@ -121,7 +107,7 @@ public class MoviesFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         Log.v(LOG_TAG, "***  Entering onCreateView()");
-        prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+
         rootView = inflater.inflate(R.layout.movie_fragment, container, false);
         mGridView = (GridView) rootView.findViewById(R.id.gridview_movie);
 
@@ -139,7 +125,7 @@ public class MoviesFragment extends Fragment {
             super.onResume();
         Log.v(LOG_TAG, "***  Entering onResume()");
 
-        if (getDataSource().equals("network")) {
+        if (mMoviePreferences.getDataSource().equals("network")) {
             initializeMoviesGridFromNetwork();
         } else {  // Cache  or Favorites
             initializeMoviesGridFromCache();
@@ -215,9 +201,8 @@ public class MoviesFragment extends Fragment {
 
         if(savedInstanceState != null ) {
             savedPosition = savedInstanceState.getInt("saved_position");
-            if (savedPosition == -1) {
+            if (savedPosition == -1)
                 savedPosition = 0;
-            }
 
             savedMovieId = savedInstanceState.getString("saved_movie_id");
             if (savedMovieId == null)
@@ -225,14 +210,10 @@ public class MoviesFragment extends Fragment {
         }
 
         // Did the App just start?
-        if(didAppJustStart(savedInstanceState)) {
+        if(didAppJustStart(savedInstanceState))
             mState = "app_just_started";
-            oldPrefs = prefs.getAll();
-        } else { // Ok, we just rotated
+         else  // Ok, we just rotated
             mState = "rotated";
-            savedPrefs = savedInstanceState.getString("saved_prefs");
-            Log.v(LOG_TAG, "***  onActivityCreated().  savedPrefs ==   " + savedPrefs);
-        }
 
     }
 
@@ -268,7 +249,7 @@ public class MoviesFragment extends Fragment {
         if(mGridView.getNumColumns() % 2 == 0)  // Tablets use odd #s
             return;  // Don't select unless we're using master/detail
 
-        if(savedMovieId != null && savedMovieId != "") {
+        if(savedMovieId != null && savedMovieId.equals("")) {
             Log.v(LOG_TAG, "***  FillOutDetail savedPosition = "+ savedPosition);
             mGridView.smoothScrollToPosition(savedPosition);
             Log.v(LOG_TAG, "***  FillOutDetail savedMovieId = " + savedMovieId);
@@ -284,7 +265,7 @@ public class MoviesFragment extends Fragment {
 
     private Cursor getCursorWithCurrentPreferences() {
 
-        Uri uri = getUriFromPreferences();
+        Uri uri = mMoviePreferences.getUriFromMoviePreferences();
         Cursor cursor;
         try {
             cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
@@ -301,39 +282,7 @@ public class MoviesFragment extends Fragment {
         return cursor;
     }
 
-    private Uri getUriFromPreferences() {
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
-        String[] keys = {getActivity().getString(R.string.pref_data_source_key),
-                getActivity().getString(R.string.pref_vote_count_key),
-                getActivity().getString(R.string.pref_period_key),
-                "genre_ids", getActivity().getString(R.string.pref_sort_order_key)};
-
-        String dataSource = preferences.getString(getActivity().getString(R.string.pref_data_source_key), "network");
-        String voteCount = preferences.getString(getActivity().getString(R.string.pref_vote_count_key), "0");
-        String timePeriods = preferences.getString(getActivity().getString(R.string.pref_period_key), "all");
-        String genreIds = getGenresAsCommaSeparatedNumbers(preferences);
-        String sortOrder = preferences.getString(getActivity().getString(R.string.pref_sort_order_key), "none");
-
-        String[] values = {dataSource, voteCount, timePeriods, genreIds, sortOrder};
-
-        return MovieEntry.buildMoviesUriWithQueryParameters(
-                MovieEntry.CONTENT_URI, keys, values
-        );
-    }
-
-    private String getGenresAsCommaSeparatedNumbers(SharedPreferences preferences) {
-
-        String genres;
-        Set<String> genresSet = preferences.getStringSet("genre_ids", null);
-        if (genresSet != null && !genresSet.isEmpty())
-            genres = genresSet.toString().replaceAll("\\s+", "").replace("[", "").replace("]", "");
-        else
-            genres = "";
-
-        return genres;
-    }
 
     private void setMovieItemClickListener(GridView gridView) {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -357,7 +306,7 @@ public class MoviesFragment extends Fragment {
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if (getDataSource().equals("network"))
+                if (mMoviePreferences.getDataSource().equals("network"))
                     getAnotherPageOfMoviesIfNeeded(firstVisibleItem, visibleItemCount, totalItemCount);
             }
         });
@@ -399,30 +348,7 @@ public class MoviesFragment extends Fragment {
     }
 
 
-    public ArrayList<Integer> getGenreIdsAsInegerArrayList(String genreIds) {
 
-        if (genreIds != null) {
-            String[] strArray = genreIds
-                    .replace("[", "").replace("]", "").replaceAll("\\s+", "")
-                    .split(",");
-            ArrayList<Integer> intArrayList = new ArrayList<>(strArray.length);
-            for (String i : strArray) {
-                if (i != null && !i.isEmpty())
-                    intArrayList.add(Integer.parseInt(i));
-            }
-
-            return intArrayList;
-        } else
-            return null;
-    }
-
-    @NonNull
-    private String getDataSource() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-
-        return preferences.getString(
-                getActivity().getString(R.string.pref_data_source_key), "network");
-    }
 
     private void updateMovie(MoviesResponse.ResultsEntity mr, boolean isLastResult) {
 
@@ -516,7 +442,6 @@ public class MoviesFragment extends Fragment {
 
     private MoviesResponse getMoviesResponse(byte[] responseBody) {
         String responsestr = new String(responseBody);
-        Gson gson = new Gson();
         return gson.fromJson(responsestr, MoviesResponse.class);
     }
 

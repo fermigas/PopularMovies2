@@ -16,14 +16,18 @@
 package com.example.android.popularmovies.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import javax.inject.Inject;
+
 
 public class MainActivity extends ActionBarActivity implements MoviesFragment.Callback {
+
 
     private static final String MOVIEDETAILDFRAGMENT_TAG = "MDFTAG";
     private boolean mTwoPane;

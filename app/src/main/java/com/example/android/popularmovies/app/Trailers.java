@@ -1,13 +1,11 @@
 package com.example.android.popularmovies.app;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -19,35 +17,38 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 
 import org.apache.http.Header;
 
+import javax.inject.Inject;
+
 public class Trailers {
 
     private MovieDetailsFragment movieDetailsFragment;
-    Context mContext;
+    Activity mActivity;
     ListView mTrailersListView;
     String mMovieId;
     private MovieTrailersResponse trailersResponse;
 
+    @Inject MoviePreferences mMoviePreferences;
+    @Inject Gson gson;
 
-    public Trailers(MovieDetailsFragment movieDetailsFragment, Context mContext, ListView trailersListView, String movieId) {
+
+    public Trailers(MovieDetailsFragment movieDetailsFragment, Activity activity, ListView trailersListView, String movieId) {
         this.movieDetailsFragment = movieDetailsFragment;
-        this.mContext = mContext;
+        this.mActivity = activity;
         this.mTrailersListView = trailersListView;
         this.mMovieId = movieId;
+
+        // Inject mMoviePreferences
+        ((MoviesApplication) activity.getApplication()).getAppComponent().inject(this);
 
     }
 
 
     public void setMovieTrailers() {
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        String dataSource = preferences.getString(mContext.getString(R.string.pref_data_source_key),
-                "network");
-
-        if (dataSource.equals("network"))
+        if (mMoviePreferences.getDataSource().equals("network"))
             getTrailersFromWebAndInsertThemInDb();
         else
             setTrailersListAdapter();
-
 
     }
 
@@ -56,7 +57,7 @@ public class Trailers {
 
         Cursor cursor = null;
         try {
-            cursor = mContext.getContentResolver().query(
+            cursor = mActivity.getContentResolver().query(
                     MoviesContract.TrailerEntry.buildTrailerWithMovieId(String.valueOf(mMovieId)),
                     null, null, null, null);
             if (cursor != null) {
@@ -65,7 +66,7 @@ public class Trailers {
         } catch (Exception e) {
         }
 
-        TrailersCursorAdapter tca = new TrailersCursorAdapter(mContext, cursor, 0);
+        TrailersCursorAdapter tca = new TrailersCursorAdapter(mActivity, cursor, 0);
         mTrailersListView.setAdapter(tca);
 
     }
@@ -76,11 +77,10 @@ public class Trailers {
         String url = getMovieTrailersUrl(mMovieId);
 
         AsyncHttpClient client = new AsyncHttpClient();
-        client.get(mContext, url, new AsyncHttpResponseHandler() {
+        client.get(mActivity, url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String responsestr = new String(responseBody);
-                Gson gson = new Gson();
                 trailersResponse = gson.fromJson(responsestr, MovieTrailersResponse.class);
                 insertTrailers(trailersResponse);
                 setTrailersListAdapter();
@@ -100,7 +100,7 @@ public class Trailers {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Intent intent = mContext
+                Intent intent = mActivity
                         .getPackageManager()
                         .getLaunchIntentForPackage("com.google.android.youtube");
 
@@ -119,14 +119,14 @@ public class Trailers {
         try {
 
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + source));
-            mContext.startActivity(intent);
+            mActivity.startActivity(intent);
 
         } catch (ActivityNotFoundException e) {
 
             Intent intent = new Intent(Intent.ACTION_VIEW,
-                    Uri.parse(mContext.getString(R.string.you_tube_url) + source));
+                    Uri.parse(mActivity.getString(R.string.you_tube_url) + source));
 
-            mContext.startActivity(intent);
+            mActivity.startActivity(intent);
         }
     }
 
@@ -152,7 +152,7 @@ public class Trailers {
             for (MovieTrailersResponse.YoutubeEntity yte : mtr.getYoutube()) {
                 addTrailerToDb(mtr, yte);
                 trailers.append(
-                        mContext.getString(R.string.you_tube_url) +
+                        mActivity.getString(R.string.you_tube_url) +
                                 yte.getSource() + "  ");
             }
         }
@@ -189,7 +189,7 @@ public class Trailers {
         else
             trailerValues.put(MoviesContract.TrailerEntry.COLUMN_TYPE, yte.getType());
 
-        mContext.getContentResolver().insert(MoviesContract.TrailerEntry.CONTENT_URI,
+        mActivity.getContentResolver().insert(MoviesContract.TrailerEntry.CONTENT_URI,
                 trailerValues);
 
     }
